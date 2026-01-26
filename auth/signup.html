@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | BioMind Academy</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="firebase-config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-panel auth-panel">
+            <a href="../index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            
+            <div class="logo-header">
+                <i class="fas fa-dna logo-icon"></i>
+                <h1>Join BioMind</h1>
+                <p class="tagline">Start your mastery journey today</p>
+            </div>
+            
+            <form id="signup-form" class="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="signup-email" class="input-field" placeholder="Email" required>
+                    <div id="signup-email-error" class="error-message"></div>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="signup-password" class="input-field" placeholder="Password (min 6 characters)" required>
+                    <div id="signup-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="confirm-password" class="input-field" placeholder="Confirm Password" required>
+                    <div id="confirm-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="terms">
+                    <label class="checkbox">
+                        <input type="checkbox" id="accept-terms" required>
+                        <span>I agree to the <a href="#" class="form-link">Terms of Service</a> and <a href="#" class="form-link">Privacy Policy</a></span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="signup-btn">
+                    <span>Create Account</span>
+                    <i class="fas fa-spinner loading"></i>
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <button class="btn btn-google" id="google-signup">
+                <i class="fab fa-google"></i>
+                <span>Sign up with Google</span>
+            </button>
+            
+            <p class="form-footer">
+                Already have an account?
+                <a href="login.html" class="form-link">Login</a>
+            </p>
+        </div>
+    </div>
+    
+    <script type="module" src="signup.js"></script>
+</body>
+</html>
