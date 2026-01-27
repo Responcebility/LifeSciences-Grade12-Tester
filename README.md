@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🧬 Life Sciences Grade 12 Exam Prep App
 
 **Live Demo:** [lifesciences-grade12-tester.netlify.app](https://lifesciences-grade12-tester.netlify.app)
@@ -89,3 +90,4 @@ git clone https://github.com/yourusername/lifescience-grade12-app.git
 **Responcebility**  
 Computer Science Student | Aspiring Software / Web Developer  
 Focused on building **practical, student-centered software solutions**.
+
