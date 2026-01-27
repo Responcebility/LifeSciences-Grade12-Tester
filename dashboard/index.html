@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Dashboard Styles */
         .dashboard {
@@ -1056,23 +1058,74 @@
             </div>
 
             <!-- Progress Page -->
-            <div id="progress-page" class="page">
-                <div class="page-header">
-                    <h1>Your Progress</h1>
-                    <p>Track your improvement over time</p>
-                </div>
-                <div class="progress-chart" id="progress-chart">
-                    <div class="chart-placeholder" style="background: rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 50px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <i class="fas fa-chart-bar" style="font-size: 60px; color: #00d4ff; margin-bottom: 20px;"></i>
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 18px;">
-                            Your progress chart will appear here after completing tests
-                        </p>
-                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 14px; margin-top: 10px;">
-                            Complete at least one test to see detailed analytics
-                        </p>
-                    </div>
-                </div>
-            </div>
+
+<div id="progress-page" class="page">
+    <div class="page-header">
+        <h1>Your Progress Analytics</h1>
+        <p>Track your improvement and identify weak areas</p>
+    </div>
+    
+    <div class="stats-grid" style="margin-bottom: 30px;">
+        <div class="stat-card">
+            <i class="fas fa-chart-line"></i>
+            <h3>Best Score</h3>
+            <p class="stat-number" id="best-score">85%</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Fastest Time</h3>
+            <p class="stat-number" id="fastest-time">22:15</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-fire"></i>
+            <h3>Current Streak</h3>
+            <p class="stat-number" id="current-streak">7 days</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-trophy"></i>
+            <h3>Rank</h3>
+            <p class="stat-number" id="user-rank">Top 15%</p>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
+        <div class="category-card" style="height: 400px;">
+            <h3 style="color: white; margin-bottom: 20px;">
+                <i class="fas fa-chart-line"></i> Score Progress Over Time
+            </h3>
+            <div id="progress-chart" style="height: 300px;"></div>
+        </div>
+        
+        <div class="category-card" style="height: 400px;">
+            <h3 style="color: white; margin-bottom: 20px;">
+                <i class="fas fa-brain"></i> Topic Mastery
+            </h3>
+            <div id="topic-mastery" style="height: 300px;"></div>
+        </div>
+    </div>
+    
+    <div class="category-card">
+        <h3 style="color: white; margin-bottom: 20px;">
+            <i class="fas fa-history"></i> Recent Test History
+        </h3>
+        <div id="test-history">
+            <table style="width: 100%; color: rgba(255, 255, 255, 0.8);">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                        <th style="padding: 15px; text-align: left;">Test</th>
+                        <th style="padding: 15px; text-align: left;">Date</th>
+                        <th style="padding: 15px; text-align: left;">Score</th>
+                        <th style="padding: 15px; text-align: left;">Time</th>
+                        <th style="padding: 15px; text-align: left;">Weak Topic</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table">
+                    <!-- Filled by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
             <!-- Paper Structure Page -->
             <div id="papers-page" class="page">

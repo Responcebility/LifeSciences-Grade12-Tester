@@ -1,6 +1,7 @@
 // dashboard/dashboard.js - FINAL FIXED VERSION
 
 // === FIREBASE IMPORTS ===
+import { initializeProgressChart, initializeTopicChart } from './progress.js';
 import { auth, db } from '../auth/firebase-config.js';
 import { 
     onAuthStateChanged, 
@@ -40,25 +41,111 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Load user data
+
 async function loadUserData(user) {
     try {
         document.getElementById('user-name').textContent = user.displayName || 'Student';
         document.getElementById('user-email').textContent = user.email;
         document.getElementById('greeting-name').textContent = user.displayName || 'Learner';
         
-        // Load user stats from Firestore
+        // Load real stats from Firestore
         const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         
         if (userSnap.exists()) {
             const data = userSnap.data();
+            
+            // Update all stats
             document.getElementById('papers-attempted').textContent = data.papersAttempted || 0;
             document.getElementById('average-score').textContent = (data.averageScore || 0) + '%';
             document.getElementById('questions-mastered').textContent = data.questionsMastered || 0;
             document.getElementById('weakest-topic').textContent = data.weakestTopic || 'None';
+            
+            // Calculate and update additional stats
+            await updateAdditionalStats(user.uid);
+            
+        } else {
+            // First-time user
+            await setDoc(userRef, {
+                name: user.displayName || 'Student',
+                email: user.email,
+                papersAttempted: 0,
+                averageScore: 0,
+                questionsMastered: 0,
+                weakestTopic: 'None',
+                createdAt: serverTimestamp(),
+                lastActive: serverTimestamp()
+            });
         }
+        
     } catch (error) {
-        console.log('No user stats yet:', error);
+        console.log('Error loading user data:', error);
+    }
+}
+
+async function updateAdditionalStats(userId) {
+    try {
+        // Fetch recent test results for additional stats
+        const testResultsRef = collection(db, 'testResults');
+        const q = query(
+            testResultsRef, 
+            where('userId', '==', userId),
+            orderBy('timestamp', 'desc'),
+            limit(50)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        let bestScore = 0;
+        let fastestTime = Infinity;
+        let totalTests = 0;
+        let totalScore = 0;
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            totalTests++;
+            totalScore += data.score || 0;
+            
+            if (data.score > bestScore) {
+                bestScore = data.score;
+            }
+            
+            if (data.timeSpent && data.timeSpent < fastestTime) {
+                fastestTime = data.timeSpent;
+            }
+        });
+        
+        // Update UI if elements exist
+        const bestScoreEl = document.getElementById('best-score');
+        const fastestTimeEl = document.getElementById('fastest-time');
+        const currentStreakEl = document.getElementById('current-streak');
+        const userRankEl = document.getElementById('user-rank');
+        
+        if (bestScoreEl) bestScoreEl.textContent = bestScore + '%';
+        if (fastestTimeEl) {
+            const minutes = Math.floor(fastestTime / 60);
+            const seconds = fastestTime % 60;
+            fastestTimeEl.textContent = fastestTime === Infinity ? 'N/A' : 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Calculate rank (simplified)
+        if (userRankEl) {
+            const avgScore = totalTests > 0 ? Math.round(totalScore / totalTests) : 0;
+            let rank = 'Beginner';
+            if (avgScore >= 80) rank = 'Top 10%';
+            else if (avgScore >= 70) rank = 'Top 25%';
+            else if (avgScore >= 60) rank = 'Top 50%';
+            else if (avgScore >= 50) rank = 'Top 75%';
+            userRankEl.textContent = rank;
+        }
+        
+        // Streak calculation (simplified - in real app, track daily logins)
+        if (currentStreakEl) {
+            currentStreakEl.textContent = totalTests > 0 ? Math.min(totalTests, 7) + ' days' : '0 days';
+        }
+        
+    } catch (error) {
+        console.error('Error updating additional stats:', error);
     }
 }
 
@@ -130,27 +217,60 @@ function setupEventListeners() {
 }
 
 // Page switching - FIXED VERSION
+
+
 function switchPage(page) {
     console.log('Switching to page:', page);
     
-    // Hide all pages
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
     });
     
-    // Show selected page
     const pageElement = document.getElementById(page + '-page');
     if (pageElement) {
         pageElement.classList.add('active');
-        console.log('Page element found and activated');
         
-        // Force display for test interface
-        if (page === 'test-interface') {
-            pageElement.style.display = 'block';
-            pageElement.style.opacity = '1';
+        // Initialize charts when progress page is opened
+        if (page === 'progress') {
+            setTimeout(() => {
+                initializeProgressChart();
+                initializeTopicChart();
+                loadTestHistory();
+            }, 100);
         }
-    } else {
-        console.error('Page element not found:', page + '-page');
+    }
+}
+
+// Add function to load test history
+async function loadTestHistory() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        const historyTable = document.getElementById('history-table');
+        if (!historyTable) return;
+        
+        // Sample data - replace with Firebase fetch
+        const historyData = [
+            { test: '2023 Nov P1', date: '2024-01-15', score: '85%', time: '28:30', weak: 'Genetics' },
+            { test: 'Mixed Questions', date: '2024-01-14', score: '78%', time: '09:45', weak: 'DNA' },
+            { test: 'Topic: Evolution', date: '2024-01-13', score: '72%', time: '12:20', weak: 'Evolution' },
+            { test: '2022 Nov P1', date: '2024-01-12', score: '80%', time: '29:15', weak: 'Nervous' },
+            { test: 'Topic: Reproduction', date: '2024-01-11', score: '68%', time: '11:40', weak: 'Reproduction' }
+        ];
+        
+        historyTable.innerHTML = historyData.map(item => `
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 15px;">${item.test}</td>
+                <td style="padding: 15px;">${item.date}</td>
+                <td style="padding: 15px; color: #2ed573; font-weight: bold;">${item.score}</td>
+                <td style="padding: 15px;">${item.time}</td>
+                <td style="padding: 15px;">${item.weak}</td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading history:', error);
     }
 }
 
@@ -432,6 +552,127 @@ function nextQuestion() {
     }
 }
 
+
+// Replace the alert with detailed analytics modal
+function showDetailedResults(score, totalMarks, percentage, timeSpent, questions, weakestTopic) {
+    const minutes = Math.floor(timeSpent / 60);
+    const seconds = timeSpent % 60;
+    
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal-overlay" id="results-modal">
+            <div class="result-modal">
+                <h2><i class="fas fa-chart-bar"></i> Test Results</h2>
+                
+                <div class="result-stats">
+                    <h3 style="color: #00d4ff; margin-bottom: 15px;">Overall Performance</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <p style="margin: 5px 0;"><strong>Score:</strong> <span style="color: #2ed573; font-size: 24px;">${score}/${totalMarks}</span></p>
+                            <p style="margin: 5px 0;"><strong>Percentage:</strong> ${percentage}%</p>
+                            <p style="margin: 5px 0;"><strong>Time:</strong> ${minutes}m ${seconds}s</p>
+                        </div>
+                        <div>
+                            <p style="margin: 5px 0;"><strong>Questions:</strong> ${questions.length}</p>
+                            <p style="margin: 5px 0;"><strong>Correct:</strong> ${score}</p>
+                            <p style="margin: 5px 0;"><strong>Weakest Topic:</strong> ${weakestTopic}</p>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: #00d4ff; margin-bottom: 15px;">Topic Breakdown</h3>
+                    <div id="topic-breakdown">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                    
+                    <h3 style="color: #00d4ff; margin-bottom: 15px; margin-top: 20px;">Recommendations</h3>
+                    <p style="color: white; font-size: 14px; line-height: 1.5;">
+                        ${getRecommendation(percentage, weakestTopic)}
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="review-test" class="btn-submit" style="background: #667eea;">
+                        <i class="fas fa-redo"></i> Review Answers
+                    </button>
+                    <button id="close-results" class="btn-submit">
+                        <i class="fas fa-home"></i> Return Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add topic breakdown
+    const breakdown = calculateTopicBreakdown(currentTest.questions, userAnswers);
+    document.getElementById('topic-breakdown').innerHTML = breakdown;
+    
+    // Add event listeners
+    document.getElementById('close-results').addEventListener('click', () => {
+        document.getElementById('results-modal').remove();
+        switchPage('home');
+    });
+    
+    document.getElementById('review-test').addEventListener('click', () => {
+        document.getElementById('results-modal').remove();
+        // Start review mode
+        startReviewMode();
+    });
+}
+
+function calculateTopicBreakdown(questions, answers) {
+    const topicStats = {};
+    
+    questions.forEach((question, index) => {
+        if (!question.topic) return;
+        
+        if (!topicStats[question.topic]) {
+            topicStats[question.topic] = { correct: 0, total: 0 };
+        }
+        
+        topicStats[question.topic].total++;
+        if (answers[index] === question.correct) {
+            topicStats[question.topic].correct++;
+        }
+    });
+    
+    let html = '';
+    Object.entries(topicStats).forEach(([topic, stats]) => {
+        const percentage = Math.round((stats.correct / stats.total) * 100);
+        const color = percentage >= 70 ? '#2ed573' : percentage >= 50 ? '#ffa502' : '#ff4757';
+        
+        html += `
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="color: white;">${topic}</span>
+                    <span style="color: ${color}; font-weight: bold;">${percentage}%</span>
+                </div>
+                <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: ${percentage}%; background: ${color}; border-radius: 4px;"></div>
+                </div>
+                <small style="color: rgba(255, 255, 255, 0.5);">${stats.correct}/${stats.total} correct</small>
+            </div>
+        `;
+    });
+    
+    return html || '<p style="color: rgba(255, 255, 255, 0.7);">No topic data available.</p>';
+}
+
+function getRecommendation(percentage, weakestTopic) {
+    if (percentage >= 80) {
+        return "Excellent! You're mastering the content. Try challenging yourself with mixed questions or time trials.";
+    } else if (percentage >= 60) {
+        return `Good work! Focus on improving your ${weakestTopic} knowledge. Review the topic notes and practice more questions in that area.`;
+    } else {
+        return `You need more practice with ${weakestTopic}. Study the topic fundamentals and try the topic-specific practice tests.`;
+    }
+}
+
+// Update submitTest() to use new modal:
+// Replace the alert line (~340) with:
+showDetailedResults(score, totalMarks, percentage, timeSpent, currentTest.questions, weakestTopic);
 // Submit test
 async function submitTest() {
     console.log('Submitting test...');
@@ -570,3 +811,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial page setup
     switchPage('home');
 });
+
