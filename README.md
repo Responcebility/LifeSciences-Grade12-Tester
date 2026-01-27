@@ -54,7 +54,7 @@ This app addresses these challenges by providing:
 **Backend / Services**  
 - Firebase Authentication  
 - Firestore Database  
-- Firebase Hosting  
+- Netlify Hosting  
 
 **Tools**  
 - Git & GitHub  
