@@ -63,17 +63,17 @@ function initReviewPage() {
     document.getElementById('btn-download')?.addEventListener('click', downloadReport);
     document.getElementById('btn-retry')?.addEventListener('click', retryIncorrectQuestions);
     document.getElementById('btn-back-to-results')?.addEventListener('click', () => {
-        window.location.href = 'results.html';
+        window.location.href = 'index.html';
     });
 }
 
 // Load test results from Firebase
 async function loadTestResults() {
     const user = auth.currentUser;
-    if (!user) {
-        window.location.href = '../index.html';
-        return;
-    }
+    // if (!user) {
+    //     window.location.href = '../index.html';
+    //     return;
+    // }
     
     try {
         // Get latest test results

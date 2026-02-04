@@ -14,7 +14,12 @@ import {
     updateDoc,
     addDoc,
     collection,
-    serverTimestamp
+    serverTimestamp,
+    query,
+    where,
+    orderBy,
+    limit,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 // === QUESTION DATABASE IMPORTS ===
@@ -217,8 +222,6 @@ function setupEventListeners() {
 }
 
 // Page switching - FIXED VERSION
-
-
 function switchPage(page) {
     console.log('Switching to page:', page);
     
@@ -552,50 +555,70 @@ function nextQuestion() {
     }
 }
 
-
 // Replace the alert with detailed analytics modal
 function showDetailedResults(score, totalMarks, percentage, timeSpent, questions, weakestTopic) {
     const minutes = Math.floor(timeSpent / 60);
     const seconds = timeSpent % 60;
     
-    // Create modal HTML
+    // Create modal HTML WITH REVIEW BUTTON - FIXED BUTTON POSITION
     const modalHTML = `
         <div class="modal-overlay" id="results-modal">
-            <div class="result-modal">
-                <h2><i class="fas fa-chart-bar"></i> Test Results</h2>
-                
-                <div class="result-stats">
-                    <h3 style="color: #00d4ff; margin-bottom: 15px;">Overall Performance</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <p style="margin: 5px 0;"><strong>Score:</strong> <span style="color: #2ed573; font-size: 24px;">${score}/${totalMarks}</span></p>
-                            <p style="margin: 5px 0;"><strong>Percentage:</strong> ${percentage}%</p>
-                            <p style="margin: 5px 0;"><strong>Time:</strong> ${minutes}m ${seconds}s</p>
-                        </div>
-                        <div>
-                            <p style="margin: 5px 0;"><strong>Questions:</strong> ${questions.length}</p>
-                            <p style="margin: 5px 0;"><strong>Correct:</strong> ${score}</p>
-                            <p style="margin: 5px 0;"><strong>Weakest Topic:</strong> ${weakestTopic}</p>
-                        </div>
-                    </div>
+            <div class="result-modal" style="
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+            ">
+                <div style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 25px;
+                    max-height: calc(85vh - 120px);
+                ">
+                    <h2><i class="fas fa-chart-bar"></i> Test Results</h2>
                     
-                    <h3 style="color: #00d4ff; margin-bottom: 15px;">Topic Breakdown</h3>
-                    <div id="topic-breakdown">
-                        <!-- Will be filled by JavaScript -->
+                    <div class="result-stats">
+                        <h3 style="color: #00d4ff; margin-bottom: 15px;">Overall Performance</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <p style="margin: 5px 0;"><strong>Score:</strong> <span style="color: #2ed573; font-size: 24px;">${score}/${totalMarks}</span></p>
+                                <p style="margin: 5px 0;"><strong>Percentage:</strong> ${percentage}%</p>
+                                <p style="margin: 5px 0;"><strong>Time:</strong> ${minutes}m ${seconds}s</p>
+                            </div>
+                            <div>
+                                <p style="margin: 5px 0;"><strong>Questions:</strong> ${questions.length}</p>
+                                <p style="margin: 5px 0;"><strong>Correct:</strong> ${score}</p>
+                                <p style="margin: 5px 0;"><strong>Weakest Topic:</strong> ${weakestTopic}</p>
+                            </div>
+                        </div>
+                        
+                        <h3 style="color: #00d4ff; margin-bottom: 15px;">Topic Breakdown</h3>
+                        <div id="topic-breakdown" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+                            <!-- Will be filled by JavaScript -->
+                        </div>
+                        
+                        <h3 style="color: #00d4ff; margin-bottom: 15px; margin-top: 20px;">Recommendations</h3>
+                        <p style="color: white; font-size: 14px; line-height: 1.5;">
+                            ${getRecommendation(percentage, weakestTopic)}
+                        </p>
                     </div>
-                    
-                    <h3 style="color: #00d4ff; margin-bottom: 15px; margin-top: 20px;">Recommendations</h3>
-                    <p style="color: white; font-size: 14px; line-height: 1.5;">
-                        ${getRecommendation(percentage, weakestTopic)}
-                    </p>
                 </div>
                 
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="review-test" class="btn-submit" style="background: #667eea;">
+                <!-- BUTTONS - ALWAYS VISIBLE AT BOTTOM -->
+                <div style="
+                    padding: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    background: rgba(0, 0, 0, 0.3);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    position: sticky;
+                    bottom: 0;
+                ">
+                    <button id="review-test" class="btn-submit" style="background: #667eea; padding: 14px;">
                         <i class="fas fa-redo"></i> Review Answers
                     </button>
-                    <button id="close-results" class="btn-submit">
-                        <i class="fas fa-home"></i> Return Home
+                    <button id="close-results" class="btn-submit" style="padding: 14px;">
+                        <i class="fas fa-home"></i> Return to Dashboard
                     </button>
                 </div>
             </div>
@@ -609,16 +632,23 @@ function showDetailedResults(score, totalMarks, percentage, timeSpent, questions
     const breakdown = calculateTopicBreakdown(currentTest.questions, userAnswers);
     document.getElementById('topic-breakdown').innerHTML = breakdown;
     
-    // Add event listeners
+    // ADD EVENT LISTENER FOR REVIEW BUTTON
+    document.getElementById('review-test').addEventListener('click', () => {
+        // Store the test data in localStorage
+        localStorage.setItem('reviewData', JSON.stringify({
+            questions: currentTest.questions,
+            userAnswers: userAnswers,
+            testType: currentTest.type
+        }));
+        
+        // Redirect to review page
+        window.location.href = 'review-answers.html';
+    });
+    
+    // Add event listener for close button
     document.getElementById('close-results').addEventListener('click', () => {
         document.getElementById('results-modal').remove();
         switchPage('home');
-    });
-    
-    document.getElementById('review-test').addEventListener('click', () => {
-        document.getElementById('results-modal').remove();
-        // Start review mode
-        startReviewMode();
     });
 }
 
@@ -670,9 +700,6 @@ function getRecommendation(percentage, weakestTopic) {
     }
 }
 
-// Update submitTest() to use new modal:
-// Replace the alert line (~340) with:
-showDetailedResults(score, totalMarks, percentage, timeSpent, currentTest.questions, weakestTopic);
 // Submit test
 async function submitTest() {
     console.log('Submitting test...');
@@ -727,12 +754,8 @@ async function submitTest() {
         }
     });
     
-    // Show results
-    const minutes = Math.floor(timeSpent / 60);
-    const seconds = timeSpent % 60;
-    const timeStr = `${minutes}m ${seconds}s`;
-    
-    alert(`Test Completed!\n\nScore: ${score}/${totalMarks} marks (${percentage}%)\nTime: ${timeStr}\nQuestions: ${currentTest.questions.length}\nWeakest Topic: ${weakestTopic}`);
+    // Show detailed results modal (REPLACED THE ALERT)
+    showDetailedResults(score, totalMarks, percentage, timeSpent, currentTest.questions, weakestTopic);
     
     // Save results to Firestore
     const user = auth.currentUser;
@@ -787,22 +810,14 @@ async function submitTest() {
         }
     }
     
-    // Return to home page
-    switchPage('home');
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-    const homeNav = document.querySelector('[data-page="home"]');
-    if (homeNav) homeNav.classList.add('active');
-    
-    // Reload stats
-    if (auth.currentUser) {
-        loadUserData(auth.currentUser);
-    }
-    
     // Reset test state
     currentTest = null;
     currentQuestionIndex = 0;
     userAnswers = [];
     flaggedQuestions.clear();
+    
+    // Don't return to home page automatically - let the modal stay
+    // The user will click "Return Home" or "Review Answers"
 }
 
 // Initialize when DOM is loaded
@@ -811,4 +826,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial page setup
     switchPage('home');
 });
-
