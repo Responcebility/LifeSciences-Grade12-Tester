@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Answers - BioMind Academy</title>
+    <title>Review Answers - BioMind Life Sciences</title>
     <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="review-answers.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="review-answers.css">
 </head>
 <body class="dashboard">
     <!-- Sidebar -->
@@ -20,26 +20,14 @@
             <div class="avatar">
                 <i class="fas fa-user"></i>
             </div>
-            <h3 id="user-name">Loading...</h3>
-            <p id="user-email">Loading...</p>
+            <h3 id="user-name">Student</h3>
+            <p id="user-email">student@example.com</p>
         </div>
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
-            </a>
-            <a href="tests.html" class="nav-item">
-                <i class="fas fa-clipboard-list"></i>
-                <span>Past Papers</span>
-            </a>
-            <a href="test-interface.html" class="nav-item">
-                <i class="fas fa-pen-alt"></i>
-                <span>Take Test</span>
-            </a>
-            <a href="results.html" class="nav-item">
-                <i class="fas fa-chart-bar"></i>
-                <span>Results</span>
             </a>
             <a href="review-answers.html" class="nav-item active">
                 <i class="fas fa-search"></i>
@@ -57,7 +45,7 @@
     <main class="main-content">
         <div class="page active" id="review-page">
             <div class="page-header">
-                <h1>Review Your Answers</h1>
+                <h1>Review Your Test Answers</h1>
                 <p>Detailed analysis of your test performance with correct answers and explanations</p>
             </div>
             
@@ -65,99 +53,50 @@
             <div class="test-summary-card">
                 <div class="summary-header">
                     <div>
-                        <h3 id="test-title">JavaScript Fundamentals Test</h3>
-                        <p>Completed: Just now | <span id="test-score">85%</span></p>
+                        <h3 id="test-title">Loading test data...</h3>
+                        <p id="test-info">Loading...</p>
                     </div>
                     <div class="score-badge">
-                        <span class="score-value" id="test-score-display">85%</span>
+                        <span class="score-value" id="test-score-display">0%</span>
                     </div>
                 </div>
                 <div class="summary-stats">
                     <div class="stat-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span><span id="test-correct">17</span> Correct</span>
+                        <i class="fas fa-check-circle" style="color: #2ed573;"></i>
+                        <span><span id="test-correct">0</span> Correct</span>
                     </div>
                     <div class="stat-item">
-                        <i class="fas fa-times-circle"></i>
-                        <span><span id="test-incorrect">3</span> Incorrect</span>
+                        <i class="fas fa-times-circle" style="color: #ff4757;"></i>
+                        <span><span id="test-incorrect">0</span> Incorrect</span>
                     </div>
                     <div class="stat-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Time: <span id="test-time">22m 45s</span></span>
+                        <i class="fas fa-question-circle" style="color: #ffa502;"></i>
+                        <span><span id="test-total">0</span> Total Questions</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-percentage" style="color: #00d4ff;"></i>
+                        <span><span id="test-percentage">0</span>% Score</span>
                     </div>
                 </div>
             </div>
             
-            <!-- Filter Controls -->
-            <div class="review-controls">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all">All Questions</button>
-                    <button class="filter-btn" data-filter="incorrect">Incorrect Only</button>
-                    <button class="filter-btn" data-filter="flagged">Flagged</button>
-                </div>
-                <div class="view-toggle">
-                    <button class="view-btn active" data-view="detailed">
-                        <i class="fas fa-list"></i> Detailed View
-                    </button>
-                    <button class="view-btn" data-view="summary">
-                        <i class="fas fa-chart-pie"></i> Summary
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Questions Review List -->
-            <div class="questions-review-list">
-                <!-- Questions will be loaded dynamically by JavaScript -->
-            </div>
-            
-            <!-- Performance Insights -->
-            <div class="performance-insights">
-                <h2><i class="fas fa-chart-line"></i> Performance Insights</h2>
-                <div class="insights-grid">
-                    <div class="insight-card">
-                        <i class="fas fa-clock"></i>
-                        <h3>Time Management</h3>
-                        <p>You spent an average of <strong>1m 12s</strong> per question. Consider pacing yourself better on difficult questions.</p>
-                    </div>
-                    <div class="insight-card">
-                        <i class="fas fa-book"></i>
-                        <h3>Weakest Area</h3>
-                        <p>JavaScript Data Types (60% correct). Review primitive vs reference types and type coercion.</p>
-                    </div>
-                    <div class="insight-card">
-                        <i class="fas fa-trophy"></i>
-                        <h3>Strongest Area</h3>
-                        <p>Array Methods (100% correct). Excellent understanding of array manipulation in JavaScript.</p>
-                    </div>
+            <!-- Questions Review Container -->
+            <div class="questions-review-list" id="questions-container">
+                <!-- Questions will be loaded by JavaScript -->
+                <div class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i> Loading your test review...
                 </div>
             </div>
             
             <!-- Action Buttons -->
             <div class="review-actions">
-                <button class="btn-secondary" id="btn-download">
-                    <i class="fas fa-download"></i> Download Report
-                </button>
-                <button class="btn-secondary" id="btn-retry">
-                    <i class="fas fa-redo"></i> Retry Incorrect Questions
-                </button>
-                <button class="btn-primary" id="btn-back-to-results">
-                    <i class="fas fa-arrow-left"></i> Back to Results
+                <button class="btn-primary" id="btn-back-dashboard">
+                    <i class="fas fa-home"></i> Back to Dashboard
                 </button>
             </div>
         </div>
     </main>
     
     <script type="module" src="review-answers.js"></script>
-    <!-- <script type="module">
-        // Handle logout
-        import { auth } from '../auth/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-        
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = '../index.html';
-            });
-        });
-    </script> -->
 </body>
 </html>
