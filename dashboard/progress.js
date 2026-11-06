@@ -23,7 +23,7 @@ function axisStyle() {
     return {
         grid: { color: cssVar('--border') },
         border: { display: false },
-        ticks: { color: cssVar('--text-3'), font: { family: 'Inter' } }
+        ticks: { color: cssVar('--text-3'), font: { family: 'Plus Jakarta Sans' } }
     };
 }
 

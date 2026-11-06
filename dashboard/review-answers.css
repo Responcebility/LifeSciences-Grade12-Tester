@@ -7,17 +7,28 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 10px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    color: #ffffff;
+    background-color: var(--navy);
+    background-image: var(--pattern-on-dark), linear-gradient(90deg, var(--navy), var(--navy-2));
+    background-size: 240px 240px, cover;
 }
 
 .review-topbar .theme-toggle {
     justify-self: end;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
 }
 
 .review-topbar .btn-ghost {
     justify-self: start;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.review-topbar .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
 }
 
 .review-main {
@@ -27,6 +38,8 @@
 }
 
 .review-summary {
+    background-image: var(--pattern-on-light);
+    background-size: 240px 240px;
     display: flex;
     align-items: center;
     gap: 22px;
@@ -86,9 +99,9 @@
 }
 
 .filter-chip[aria-selected="true"] {
-    background: var(--text);
-    border-color: var(--text);
-    color: var(--bg);
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
 }
 
 .filter-chip[aria-selected="true"] span {

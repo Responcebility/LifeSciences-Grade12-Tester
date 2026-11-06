@@ -8,93 +8,166 @@
     <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared/theme.css">
     <link rel="stylesheet" href="auth/style.css">
 </head>
 <body class="landing">
-    <header class="site-header">
-        <a href="index.html" class="brand">
-            <span class="brand-mark"><i class="fas fa-dna"></i></span>
-            PowerPrep
-        </a>
-        <nav class="site-nav" id="site-nav">
-            <button class="icon-btn" id="theme-toggle" type="button"></button>
-            <a href="auth/login.html" class="btn btn-ghost">Log in</a>
-            <a href="auth/signup.html" class="btn btn-primary">Sign up free</a>
-        </nav>
-    </header>
+    <section class="hero-wrap blue-panel">
+        <header class="site-header on-dark">
+            <a href="index.html" class="brand">
+                <span class="brand-mark"><i class="fas fa-dna"></i></span>
+                <span class="brand-name">Power<span>Prep</span></span>
+            </a>
+            <nav class="site-links" aria-label="Sections">
+                <a href="#features">Features</a>
+                <a href="#how">How it works</a>
+                <a href="#topics">Topics</a>
+            </nav>
+            <div class="site-nav" id="site-nav">
+                <button class="icon-btn icon-btn-light" id="theme-toggle" type="button"></button>
+                <a href="auth/login.html" class="btn btn-outline-light nav-login">Log in</a>
+                <a href="auth/signup.html" class="btn btn-light">Sign up free</a>
+            </div>
+        </header>
 
-    <main>
-        <section class="hero">
+        <div class="hero">
             <div class="hero-copy">
-                <span class="badge badge-primary"><i class="fas fa-graduation-cap"></i> Grade 12 Life Sciences · CAPS</span>
-                <h1>Find your weak topics.<br>Fix them before the exam.</h1>
-                <p class="hero-lead">Practise exam-style questions under timed conditions, see why each answer is right or wrong, and track which topics need more work.</p>
+                <span class="hero-pill"><i class="fas fa-graduation-cap"></i> Grade 12 Life Sciences · CAPS</span>
+                <h1>Find your <span class="highlight">weak topics</span>.<br>Fix them before the exam.</h1>
+                <p class="hero-lead">Timed, exam-style practice for Paper 1 and Paper 2. See why every answer is right or wrong, and watch your topic mastery grow.</p>
                 <div class="hero-actions" id="hero-actions">
-                    <a href="auth/signup.html" class="btn btn-primary btn-lg">Start practising <i class="fas fa-arrow-right"></i></a>
-                    <a href="auth/login.html" class="btn btn-secondary btn-lg">I have an account</a>
+                    <a href="auth/signup.html" class="btn btn-accent btn-lg">Start practising free <i class="fas fa-arrow-right"></i></a>
+                    <a href="auth/login.html" class="btn btn-outline-light btn-lg">I have an account</a>
                 </div>
-                <p class="hero-note">Free to use · Works on your phone</p>
+                <ul class="hero-ticks">
+                    <li><i class="fas fa-check"></i> Free to use</li>
+                    <li><i class="fas fa-check"></i> Works on your phone</li>
+                    <li><i class="fas fa-check"></i> Dark mode for late-night study</li>
+                </ul>
             </div>
 
-            <div class="hero-preview card" aria-hidden="true">
-                <div class="preview-top">
-                    <span class="badge">Question 4 of 10</span>
-                    <span class="preview-timer"><i class="far fa-clock"></i> 12:48</span>
+            <div class="hero-art" aria-hidden="true">
+                <img src="assets/study-scene.svg" alt="" class="hero-illustration" width="520" height="420">
+                <div class="float-card float-card-a">
+                    <span class="float-icon tone-green"><i class="fas fa-check"></i></span>
+                    <div><strong>Correct!</strong><small>Helicase unwinds DNA</small></div>
                 </div>
-                <div class="preview-progress"><span style="width: 40%"></span></div>
-                <p class="preview-q">What is the function of tRNA in protein synthesis?</p>
-                <div class="preview-option is-correct"><span>A</span> Carries amino acids to the ribosome <i class="fas fa-check"></i></div>
-                <div class="preview-option"><span>B</span> Forms the mRNA template</div>
-                <div class="preview-option is-wrong"><span>C</span> Unzips DNA strands <i class="fas fa-xmark"></i></div>
-                <div class="preview-explain">
-                    <i class="far fa-lightbulb"></i>
-                    tRNA carries specific amino acids to the ribosome during translation.
+                <div class="float-card float-card-b">
+                    <span class="float-icon tone-yellow"><i class="fas fa-crosshairs"></i></span>
+                    <div><strong>Focus area</strong><small>Meiosis · 3 questions</small></div>
                 </div>
+            </div>
+        </div>
+
+        <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 40c240 40 480 50 720 30s480-60 720-30v50H0z"/>
+        </svg>
+    </section>
+
+    <main>
+        <section class="numbers card" aria-label="At a glance">
+            <div><strong id="count-questions">85</strong><span>exam-style questions</span></div>
+            <div><strong id="count-topics">12</strong><span>Grade 12 topics</span></div>
+            <div><strong>2</strong><span>full practice papers</span></div>
+            <div><strong>100%</strong><span>free</span></div>
+        </section>
+
+        <section class="section" id="features">
+            <p class="kicker">Why PowerPrep</p>
+            <h2 class="section-heading">Everything you need to revise smarter</h2>
+            <div class="feature-grid">
+                <article class="feature card">
+                    <span class="feature-icon tone-blue"><i class="fas fa-file-pen"></i></span>
+                    <h3>Practise like the real exam</h3>
+                    <p>Timed practice papers for Paper 1 and Paper 2, quick mixed tests, and focused practice on a single topic.</p>
+                </article>
+                <article class="feature card">
+                    <span class="feature-icon tone-yellow"><i class="far fa-lightbulb"></i></span>
+                    <h3>Learn from every answer</h3>
+                    <p>After each test, go through every question with the correct answer and a short explanation.</p>
+                </article>
+                <article class="feature card">
+                    <span class="feature-icon tone-green"><i class="fas fa-chart-line"></i></span>
+                    <h3>Know exactly what to study</h3>
+                    <p>Your topic mastery, scores and study streak update after every test, and your weakest topic is always one tap away.</p>
+                </article>
             </div>
         </section>
 
-        <section class="features">
-            <article class="feature">
-                <span class="feature-icon"><i class="fas fa-layer-group"></i></span>
-                <h3>Practise by paper or topic</h3>
-                <p>Full timed papers, quick mixed sets, or focused practice on DNA, genetics, reproduction and more.</p>
-            </article>
-            <article class="feature">
-                <span class="feature-icon"><i class="far fa-lightbulb"></i></span>
-                <h3>Learn from every answer</h3>
-                <p>Review each question after a test with the correct answer and a short explanation.</p>
-            </article>
-            <article class="feature">
-                <span class="feature-icon"><i class="fas fa-chart-simple"></i></span>
-                <h3>See where you stand</h3>
-                <p>Your scores, topic mastery and study streak update after every test you finish.</p>
-            </article>
+        <section class="section how" id="how">
+            <p class="kicker">How it works</p>
+            <h2 class="section-heading">Three steps to exam confidence</h2>
+            <ol class="steps">
+                <li class="step">
+                    <span class="step-number">1</span>
+                    <h3>Take a test</h3>
+                    <p>Start with a 10-question mixed test, a full practice paper or one topic.</p>
+                </li>
+                <li class="step">
+                    <span class="step-number">2</span>
+                    <h3>Review your answers</h3>
+                    <p>See what you got wrong and read the explanation for each question.</p>
+                </li>
+                <li class="step">
+                    <span class="step-number">3</span>
+                    <h3>Work on your weak spots</h3>
+                    <p>We point you to the topic that costs you the most marks, so every session counts.</p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="section" id="topics">
+            <p class="kicker">The syllabus</p>
+            <h2 class="section-heading">Covering the Grade 12 topics</h2>
+            <div class="topic-chips" id="topic-chips"></div>
+        </section>
+
+        <section class="cta-band blue-panel">
+            <div>
+                <h2>Ready for your finals?</h2>
+                <p>Create a free account and take your first test in under a minute.</p>
+            </div>
+            <a href="auth/signup.html" class="btn btn-accent btn-lg" id="cta-button">Create my free account <i class="fas fa-arrow-right"></i></a>
         </section>
     </main>
 
     <footer class="site-footer">
-        <span>&copy; <span id="year"></span> PowerPrep</span>
-        <span>Built for South African Grade 12 learners</span>
+        <a href="index.html" class="brand">
+            <span class="brand-mark"><i class="fas fa-dna"></i></span>
+            <span class="brand-name">Power<span>Prep</span></span>
+        </a>
+        <span>Built for South African Grade 12 learners · &copy; <span id="year"></span></span>
     </footer>
 
     <script type="module">
         import { auth } from './auth/firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-        import { initThemeToggle } from './shared/ui.js';
+        import { initThemeToggle, escapeHtml } from './shared/ui.js';
+        import { TOPICS, countQuestionsByTopic } from './dashboard/questions.js';
 
         document.getElementById('year').textContent = new Date().getFullYear();
         initThemeToggle(document.getElementById('theme-toggle'));
 
+        const counts = countQuestionsByTopic();
+        const grade12 = Object.entries(TOPICS).filter(([key, t]) => t.grade12 && counts[key]);
+        document.getElementById('count-questions').textContent = Object.values(counts).reduce((a, b) => a + b, 0);
+        document.getElementById('count-topics').textContent = grade12.length;
+        document.getElementById('topic-chips').innerHTML = grade12.map(([, t]) =>
+            `<span class="topic-chip"><i class="fas fa-${t.icon}"></i>${escapeHtml(t.name)}</span>`
+        ).join('');
+
         onAuthStateChanged(auth, (user) => {
             if (!user) return;
             document.getElementById('hero-actions').innerHTML =
-                '<a href="dashboard/index.html" class="btn btn-primary btn-lg">Go to your dashboard <i class="fas fa-arrow-right"></i></a>';
+                '<a href="dashboard/index.html" class="btn btn-accent btn-lg">Go to your dashboard <i class="fas fa-arrow-right"></i></a>';
+            const cta = document.getElementById('cta-button');
+            cta.href = 'dashboard/index.html';
+            cta.innerHTML = 'Continue studying <i class="fas fa-arrow-right"></i>';
             const nav = document.getElementById('site-nav');
             nav.querySelectorAll('a').forEach(a => a.remove());
-            nav.insertAdjacentHTML('beforeend', '<a href="dashboard/index.html" class="btn btn-primary">Dashboard</a>');
+            nav.insertAdjacentHTML('beforeend', '<a href="dashboard/index.html" class="btn btn-light">Dashboard</a>');
         });
     </script>
 </body>

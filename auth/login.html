@@ -7,65 +7,82 @@
     <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../shared/theme.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="auth-page">
-        <div class="auth-top">
+    <div class="auth-layout">
+        <aside class="auth-art blue-panel on-dark">
             <a href="../index.html" class="brand">
                 <span class="brand-mark"><i class="fas fa-dna"></i></span>
-                PowerPrep
+                <span class="brand-name">Power<span>Prep</span></span>
             </a>
-            <button class="icon-btn" id="theme-toggle" type="button"></button>
-        </div>
+            <div class="auth-art-body">
+                <h2>Welcome back to your study desk.</h2>
+                <p>Pick up where you left off: your scores, streak and focus topic are waiting.</p>
+                <img src="../assets/study-scene.svg" alt="" class="auth-illustration" width="520" height="420">
+                <ul class="auth-points">
+                    <li><span><i class="fas fa-file-pen"></i></span>Exam-style questions for Paper 1 and Paper 2</li>
+                    <li><span><i class="far fa-lightbulb"></i></span>An explanation for every answer</li>
+                    <li><span><i class="fas fa-chart-line"></i></span>Progress tracking by topic</li>
+                </ul>
+            </div>
+            <p class="auth-art-foot"><i class="fas fa-location-dot"></i> Made for South African Grade 12 learners</p>
+        </aside>
 
-        <main class="auth-card card">
-            <h1>Welcome back</h1>
-            <p class="auth-subtitle">Log in to continue your exam prep.</p>
+        <div class="auth-main">
+            <div class="auth-top">
+                <a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Home</a>
+                <button class="icon-btn" id="theme-toggle" type="button"></button>
+            </div>
 
-            <div id="form-alert"></div>
+            <main class="auth-card">
+                <h1>Welcome back</h1>
+                <p class="auth-subtitle">Log in to continue your exam prep.</p>
 
-            <form id="login-form" novalidate>
-                <div class="field">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" class="input" placeholder="you@example.com" autocomplete="email" required>
-                    <div id="email-error" class="field-error"></div>
-                </div>
+                <div id="form-alert"></div>
 
-                <div class="field">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" class="input" placeholder="Your password" autocomplete="current-password" required>
-                    <div id="password-error" class="field-error"></div>
-                </div>
+                <form id="login-form" novalidate>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="input" placeholder="you@example.com" autocomplete="email" required>
+                        <div id="email-error" class="field-error"></div>
+                    </div>
 
-                <div class="form-row">
-                    <label class="checkbox">
-                        <input type="checkbox" id="remember-me" checked>
-                        <span>Keep me logged in</span>
-                    </label>
-                    <button type="button" id="forgot-password" class="text-link">Forgot password?</button>
-                </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="input" placeholder="Your password" autocomplete="current-password" required>
+                        <div id="password-error" class="field-error"></div>
+                    </div>
 
-                <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-btn">
-                    <span class="spinner"></span>
-                    <span>Log in</span>
+                    <div class="form-row">
+                        <label class="checkbox">
+                            <input type="checkbox" id="remember-me" checked>
+                            <span>Keep me logged in</span>
+                        </label>
+                        <button type="button" id="forgot-password" class="text-link">Forgot password?</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-btn">
+                        <span class="spinner"></span>
+                        <span>Log in</span>
+                    </button>
+                </form>
+
+                <div class="divider">or</div>
+
+                <button type="button" class="btn btn-google btn-lg btn-block" id="google-login">
+                    <span class="google-slot"></span>
+                    <span>Continue with Google</span>
                 </button>
-            </form>
 
-            <div class="divider">or</div>
-
-            <button type="button" class="btn btn-google btn-lg btn-block" id="google-login">
-                <span class="google-slot"></span>
-                <span>Continue with Google</span>
-            </button>
-
-            <p class="auth-footer">
-                New to PowerPrep? <a href="signup.html" class="text-link">Create an account</a>
-            </p>
-        </main>
+                <p class="auth-footer">
+                    New to PowerPrep? <a href="signup.html" class="text-link">Create an account</a>
+                </p>
+            </main>
+        </div>
     </div>
 
     <script type="module" src="login.js"></script>

@@ -26,6 +26,16 @@ import { renderScoreChart, renderTopicChart } from './progress.js';
 import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle } from '../shared/ui.js';
 
 const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'guide'];
+const TONES = ['tone-blue', 'tone-yellow', 'tone-green', 'tone-sky', 'tone-orange'];
+const STUDY_TIPS = [
+    'Small, steady practice beats last-minute cramming.',
+    'Read every option before you choose: distractors often differ by one word.',
+    'Mistakes are how you learn. Review your wrong answers today.',
+    'Draw it out: sketching a diagram helps you remember the structure.',
+    'Ten focused minutes on your weakest topic is a great session.',
+    'Teach a topic to a friend. If you can explain it, you know it.',
+    'Check the marks: they tell you how much detail is expected.'
+];
 const TOPIC_COUNTS = countQuestionsByTopic();
 
 let user = null;
@@ -56,6 +66,8 @@ function init() {
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-ZA', {
         weekday: 'long', day: 'numeric', month: 'long'
     });
+    const dayNumber = Math.floor(Date.now() / 86400000);
+    document.getElementById('welcome-quote').textContent = STUDY_TIPS[dayNumber % STUDY_TIPS.length];
 
     setupEventListeners();
     renderQuickStart();
@@ -247,10 +259,11 @@ function renderFocusCard() {
 function renderQuickStart() {
     const available = PAPERS.filter(p => p.questionCount > 0);
     const rows = [
-        { start: 'mixed', icon: 'shuffle', title: 'Mixed practice', meta: `10 random questions · ${timeLimitFor(10) / 60} min` },
-        ...available.map(p => ({
+        { start: 'mixed', icon: 'shuffle', tone: 'tone-yellow', title: 'Mixed practice', meta: `10 random questions · ${timeLimitFor(10) / 60} min` },
+        ...available.map((p, i) => ({
             start: `paper:${p.key}`,
             icon: 'file-lines',
+            tone: i < 2 ? 'tone-blue' : 'tone-sky',
             title: p.title,
             meta: `${p.questionCount} questions · ${timeLimitFor(p.questionCount) / 60} min`
         }))
@@ -258,7 +271,7 @@ function renderQuickStart() {
 
     document.getElementById('quick-list').innerHTML = rows.map(row => `
         <button type="button" class="quick-row" data-start="${row.start}">
-            <span class="quick-icon"><i class="fas fa-${row.icon}"></i></span>
+            <span class="quick-icon ${row.tone}"><i class="fas fa-${row.icon}"></i></span>
             <span class="quick-text">
                 <strong>${escapeHtml(row.title)}</strong>
                 <small>${escapeHtml(row.meta)}</small>
@@ -342,9 +355,9 @@ function renderPapers() {
     document.getElementById('papers-list').innerHTML = groups.map(group => `
         <h2 class="section-title">${escapeHtml(group)}</h2>
         <div class="papers-grid">
-            ${PAPERS.filter(p => p.group === group).map(p => `
+            ${PAPERS.filter(p => p.group === group).map((p, i) => `
                 <article class="card paper-card">
-                    <span class="paper-icon"><i class="far fa-file-lines"></i></span>
+                    <span class="paper-icon ${TONES[(groups.indexOf(group) * 2 + i) % TONES.length]}"><i class="far fa-file-lines"></i></span>
                     <div class="paper-body">
                         <h3>${escapeHtml(p.title)}</h3>
                         <p>${escapeHtml(p.description)}</p>
@@ -358,14 +371,14 @@ function renderPapers() {
 }
 
 function renderTopics() {
-    const card = ([key, topic]) => {
+    const card = ([key, topic], i) => {
         const count = TOPIC_COUNTS[key] || 0;
         const stats = profile?.topics?.[key];
         const pct = stats?.total ? Math.round((stats.correct / stats.total) * 100) : null;
         return `
             <article class="card topic-card">
                 <div class="topic-head">
-                    <span class="topic-icon"><i class="fas fa-${topic.icon}"></i></span>
+                    <span class="topic-icon ${TONES[i % TONES.length]}"><i class="fas fa-${topic.icon}"></i></span>
                     <div>
                         <h3>${escapeHtml(topic.name)}</h3>
                         <small>${count} ${count === 1 ? 'question' : 'questions'}</small>

@@ -7,7 +7,7 @@
     <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../shared/theme.css">
     <link rel="stylesheet" href="dashboard.css">
@@ -19,7 +19,7 @@
         <header class="app-topbar">
             <a href="#home" class="brand">
                 <span class="brand-mark"><i class="fas fa-dna"></i></span>
-                PowerPrep
+                <span class="brand-name">Power<span>Prep</span></span>
             </a>
             <div class="topbar-actions">
                 <button class="icon-btn theme-toggle" type="button"></button>
@@ -28,10 +28,10 @@
         </header>
 
         <!-- Sidebar (bottom tab bar on phones) -->
-        <aside class="sidebar">
+        <aside class="sidebar on-dark">
             <a href="#home" class="brand sidebar-brand">
                 <span class="brand-mark"><i class="fas fa-dna"></i></span>
-                PowerPrep
+                <span class="brand-name">Power<span>Prep</span></span>
             </a>
 
             <nav class="sidebar-nav" aria-label="Main">
@@ -60,33 +60,39 @@
         <main class="main" id="main">
             <!-- Home -->
             <section id="home-page" class="page" aria-labelledby="home-title">
-                <div class="page-header">
-                    <div>
-                        <p class="eyebrow" id="today-date"></p>
-                        <h1 id="home-title">Welcome back, <span id="greeting-name">Learner</span></h1>
+                <div class="welcome-banner blue-panel">
+                    <div class="welcome-copy">
+                        <p class="welcome-date" id="today-date"></p>
+                        <h1 id="home-title">Welcome back, <span id="greeting-name">Learner</span>!</h1>
+                        <p class="welcome-quote" id="welcome-quote">Small, steady practice beats last-minute cramming.</p>
+                        <div class="welcome-actions">
+                            <button type="button" class="btn btn-accent" data-start="mixed"><i class="fas fa-bolt"></i> Quick 10-question test</button>
+                            <a href="#papers" class="btn btn-outline-light">Browse papers</a>
+                        </div>
                     </div>
+                    <img src="../assets/study-scene.svg" alt="" class="welcome-art" width="520" height="420">
                 </div>
 
                 <div id="resume-banner"></div>
 
                 <div class="stats-grid">
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="far fa-file-lines"></i></span>
+                        <span class="stat-icon tone-blue"><i class="far fa-file-lines"></i></span>
                         <span class="stat-label">Tests completed</span>
                         <strong class="stat-value" id="stat-tests">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-percent"></i></span>
+                        <span class="stat-icon tone-yellow"><i class="fas fa-percent"></i></span>
                         <span class="stat-label">Average score</span>
                         <strong class="stat-value" id="stat-average">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="far fa-circle-check"></i></span>
+                        <span class="stat-icon tone-green"><i class="far fa-circle-check"></i></span>
                         <span class="stat-label">Questions correct</span>
                         <strong class="stat-value" id="stat-correct">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-fire"></i></span>
+                        <span class="stat-icon tone-orange"><i class="fas fa-fire"></i></span>
                         <span class="stat-label">Day streak</span>
                         <strong class="stat-value" id="stat-streak">–</strong>
                     </div>
@@ -150,22 +156,22 @@
 
                 <div class="stats-grid">
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-trophy"></i></span>
+                        <span class="stat-icon tone-blue"><i class="fas fa-trophy"></i></span>
                         <span class="stat-label">Best score</span>
                         <strong class="stat-value" id="best-score">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-percent"></i></span>
+                        <span class="stat-icon tone-yellow"><i class="fas fa-percent"></i></span>
                         <span class="stat-label">Average score</span>
                         <strong class="stat-value" id="progress-average">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-bullseye"></i></span>
+                        <span class="stat-icon tone-green"><i class="fas fa-bullseye"></i></span>
                         <span class="stat-label">Accuracy</span>
                         <strong class="stat-value" id="accuracy">–</strong>
                     </div>
                     <div class="stat-card card">
-                        <span class="stat-icon"><i class="fas fa-fire"></i></span>
+                        <span class="stat-icon tone-orange"><i class="fas fa-fire"></i></span>
                         <span class="stat-label">Day streak</span>
                         <strong class="stat-value" id="current-streak">–</strong>
                     </div>

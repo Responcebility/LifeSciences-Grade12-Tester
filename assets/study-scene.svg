@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" fill="none">
+  <!-- Backdrop -->
+  <circle cx="270" cy="210" r="190" fill="#ffffff" fill-opacity="0.07"/>
+  <circle cx="270" cy="210" r="135" fill="#ffffff" fill-opacity="0.06"/>
+
+  <!-- Graduation cap -->
+  <g>
+    <path d="M85 104v20c0 11 60 11 60 0v-20l-30 13z" fill="#bfdbfe"/>
+    <path d="M60 92l55-24 55 24-55 24z" fill="#ffffff"/>
+    <path d="M115 92l50 4" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M165 96v26" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="165" cy="126" r="5" fill="#fbbf24"/>
+  </g>
+
+  <!-- DNA helix -->
+  <g stroke-linecap="round">
+    <path d="M455 20C505 50 505 80 455 110C405 140 405 170 455 200" stroke="#ffffff" stroke-width="5"/>
+    <path d="M455 20C405 50 405 80 455 110C505 140 505 170 455 200" stroke="#93c5fd" stroke-width="5"/>
+    <g stroke="#ffffff" stroke-opacity="0.55" stroke-width="3">
+      <path d="M437 38h36M426 52h58M422 65h66M426 78h58M437 92h36"/>
+      <path d="M437 128h36M426 142h58M422 155h66M426 168h58M437 182h36"/>
+    </g>
+  </g>
+
+  <!-- Graded test paper -->
+  <g transform="rotate(-8 250 172)">
+    <rect x="212" y="128" width="78" height="92" rx="6" fill="#ffffff"/>
+    <path d="M224 150h40M224 162h52M224 174h46M224 186h52M224 198h34" stroke="#bfdbfe" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="272" cy="146" r="16" fill="#fee2e2"/>
+    <text x="272" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#dc2626">A+</text>
+  </g>
+
+  <!-- Sparkles -->
+  <g fill="#fbbf24">
+    <path d="M330 70l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+    <path d="M48 214l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>
+  </g>
+  <path d="M200 64l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#ffffff"/>
+  <circle cx="380" cy="130" r="4" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="60" cy="160" r="3" fill="#ffffff" fill-opacity="0.6"/>
+
+  <!-- Desk shadow and desk -->
+  <ellipse cx="260" cy="382" rx="230" ry="12" fill="#0b1f4d" fill-opacity="0.25"/>
+  <rect x="30" y="360" width="460" height="14" rx="7" fill="#ffffff"/>
+
+  <!-- Microscope -->
+  <g>
+    <rect x="330" y="344" width="112" height="16" rx="8" fill="#ffffff"/>
+    <path d="M412 344V262c0-26-12-38-36-40" stroke="#dbeafe" stroke-width="18" stroke-linecap="round"/>
+    <rect x="344" y="292" width="84" height="10" rx="5" fill="#ffffff"/>
+    <rect x="362" y="287" width="40" height="5" rx="2" fill="#93c5fd"/>
+    <g transform="rotate(-30 370 230)">
+      <rect x="356" y="184" width="28" height="86" rx="8" fill="#ffffff"/>
+      <rect x="351" y="168" width="38" height="20" rx="6" fill="#93c5fd"/>
+      <rect x="362" y="266" width="16" height="18" rx="4" fill="#1d4ed8"/>
+    </g>
+    <circle cx="412" cy="276" r="10" fill="#1d4ed8"/>
+    <circle cx="412" cy="276" r="4" fill="#93c5fd"/>
+  </g>
+
+  <!-- Book stack -->
+  <g>
+    <rect x="70" y="320" width="172" height="40" rx="6" fill="#f59e0b"/>
+    <rect x="70" y="320" width="20" height="40" rx="6" fill="#d97706"/>
+    <rect x="96" y="327" width="138" height="26" rx="3" fill="#fffbeb"/>
+    <path d="M102 335h126M102 341h126M102 347h126" stroke="#fde68a" stroke-width="2"/>
+
+    <rect x="82" y="282" width="152" height="38" rx="6" fill="#60a5fa"/>
+    <rect x="82" y="282" width="20" height="38" rx="6" fill="#1d4ed8"/>
+    <rect x="108" y="289" width="118" height="24" rx="3" fill="#eff6ff"/>
+    <path d="M114 297h106M114 303h106" stroke="#bfdbfe" stroke-width="2"/>
+
+    <rect x="96" y="248" width="130" height="34" rx="6" fill="#ffffff"/>
+    <rect x="96" y="248" width="20" height="34" rx="6" fill="#93c5fd"/>
+    <rect x="122" y="255" width="96" height="20" rx="3" fill="#dbeafe"/>
+  </g>
+
+  <!-- Apple -->
+  <g transform="translate(0 18)">
+    <path d="M160 206v-8" stroke="#7c2d12" stroke-width="3" stroke-linecap="round"/>
+    <path d="M162 200c4-8 12-12 20-11-3 8-11 13-20 11z" fill="#22c55e"/>
+    <path d="M160 230c-14 0-24-10-24-24 0-12 9-20 19-18 3 1 4 2 5 2s2-1 5-2c10-2 19 6 19 18 0 14-10 24-24 24z" fill="#ef4444"/>
+    <path d="M146 204c1-5 4-8 8-9" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Open notebook -->
+  <g>
+    <path d="M196 314l70-10v58l-70 6z" fill="#ffffff"/>
+    <path d="M266 304l72 10v58l-72-4z" fill="#eff6ff"/>
+    <path d="M266 304v58" stroke="#bfdbfe" stroke-width="2"/>
+    <path d="M208 324l4 4 8-8M208 340l4 4 8-8" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M226 322l30-4M226 338l30-4M210 354l46-5" stroke="#93c5fd" stroke-width="3" stroke-linecap="round"/>
+    <path d="M278 316l46 6M278 330l46 6M278 344l34 4" stroke="#93c5fd" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Pencil -->
+  <g transform="rotate(-14 270 378)">
+    <rect x="214" y="370" width="92" height="12" rx="2" fill="#fbbf24"/>
+    <path d="M214 374h92" stroke="#f59e0b" stroke-width="2"/>
+    <rect x="204" y="370" width="12" height="12" rx="3" fill="#f9a8d4"/>
+    <rect x="214" y="370" width="6" height="12" fill="#cbd5e1"/>
+    <path d="M306 370l16 6-16 6z" fill="#fde7c2"/>
+    <path d="M317 374l5 2-5 2z" fill="#0f172a"/>
+  </g>
+</svg>
