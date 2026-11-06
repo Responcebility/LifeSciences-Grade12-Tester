@@ -35,6 +35,24 @@ Grade 12 learners often struggle with:
 - Password reset by email and a "keep me logged in" option
 - Light and dark mode
 
+### Schools (optional)
+- **Learners** practise on their own as before, and can join a teacher's class with a 6-character code (and leave it at any time)
+- **Teachers** create classes, see each learner's scores and the class's weakest topics, and set tests with due dates
+- **Admin** approves teacher requests, sees all accounts and manages the question bank from inside the app
+
+---
+
+## 👥 Roles and the first admin
+
+Roles live in the `roles` collection (`roles/{uid}` → `{ role: "admin" }` or `{ role: "teacher" }`). The security rules only let an admin change it, so the **first admin has to be added by hand**:
+
+1. Sign up in the app with the account that should be admin.
+2. In the Firebase console, open **Authentication → Users** and copy that account's **User UID**.
+3. Open **Firestore Database**, create a collection called `roles`, add a document whose ID is that UID, and give it a string field `role` with the value `admin`.
+4. Reload the app: an **Admin** item appears in the menu.
+
+Teachers ask for access on their **Classes** page; approve them from **Admin → Teachers**. To edit questions in the app, open **Admin → Question bank** and press **Import** once; after that the app reads questions from Firestore instead of `questions.js`.
+
 ---
 
 ## 🛠 Tech stack
@@ -53,7 +71,10 @@ auth/                   Login, sign-up and Firebase config
 dashboard/
   index.html            Dashboard, test and results screens
   dashboard.js          Page logic and the test flow
-  data.js               Firestore reads and writes
+  data.js               Firestore reads and writes (profile, results)
+  school-data.js        Roles, classes, set tests and admin data
+  classes.js            Classes page (learners and teachers)
+  admin.js              Admin page
   progress.js           Charts
   questions.js          Question bank, paper list and topic list
   review-answers.*      Answer review page
@@ -73,6 +94,8 @@ firestore.indexes.json  Index needed by the history queries
 
 - The Firebase web config in `auth/firebase-config.js` is public by design; access is controlled by `firestore.rules`.
 - Learners can only read and write their own profile and results, and results can't be edited after they are saved.
+- Teachers only see learners who joined their own classes, and only the progress summary stored in the class.
+- Only admins can give out roles or change the question bank.
 - Deploy the rules and index with the Firebase CLI: `firebase deploy --only firestore`
 
 ## 🚀 Run locally

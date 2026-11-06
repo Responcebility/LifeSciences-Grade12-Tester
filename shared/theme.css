@@ -157,6 +157,11 @@ button {
     outline-offset: 2px;
 }
 
+/* Keep the hidden attribute working even on elements styled with display: flex/grid */
+[hidden] {
+    display: none !important;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;

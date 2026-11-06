@@ -39,7 +39,9 @@
                 <a href="#papers" class="nav-item" data-page="papers"><i class="far fa-file-lines"></i><span>Papers</span></a>
                 <a href="#topics" class="nav-item" data-page="topics"><i class="fas fa-layer-group"></i><span>Topics</span></a>
                 <a href="#progress" class="nav-item" data-page="progress"><i class="fas fa-chart-simple"></i><span>Progress</span></a>
-                <a href="#guide" class="nav-item" data-page="guide"><i class="far fa-circle-question"></i><span>Exam guide</span></a>
+                <a href="#classes" class="nav-item" data-page="classes"><i class="fas fa-users"></i><span>Classes</span></a>
+                <a href="#guide" class="nav-item nav-secondary" data-page="guide"><i class="far fa-circle-question"></i><span>Exam guide</span></a>
+                <a href="#admin" class="nav-item" data-page="admin" id="nav-admin" hidden><i class="fas fa-shield-halved"></i><span>Admin</span></a>
             </nav>
 
             <div class="sidebar-footer">
@@ -98,6 +100,8 @@
                     </div>
                 </div>
 
+                <div id="assignments-card"></div>
+
                 <div class="home-grid">
                     <div class="card focus-card" id="focus-card">
                         <!-- Filled by JavaScript -->
@@ -125,7 +129,7 @@
                 <div class="page-header">
                     <div>
                         <h1 id="papers-title">Practice papers</h1>
-                        <p>Timed, exam-style multiple-choice papers written for this app.</p>
+                        <p>Timed, exam-style multiple-choice papers written for this app. <a href="#guide" class="text-link">How the real papers work</a></p>
                     </div>
                 </div>
                 <div id="papers-list"></div>
@@ -206,6 +210,29 @@
                         </table>
                     </div>
                 </div>
+            </section>
+
+            <!-- Classes -->
+            <section id="classes-page" class="page" aria-labelledby="classes-title">
+                <div class="page-header">
+                    <div>
+                        <h1 id="classes-title">Classes</h1>
+                        <p>Join your teacher's class with a code, or manage the classes you teach.</p>
+                    </div>
+                </div>
+                <div id="classes-root"></div>
+            </section>
+
+            <!-- Admin -->
+            <section id="admin-page" class="page" aria-labelledby="admin-title">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow"><i class="fas fa-shield-halved"></i> Admin</p>
+                        <h1 id="admin-title">Admin</h1>
+                        <p>Approve teachers, see how learners are doing and manage the question bank.</p>
+                    </div>
+                </div>
+                <div id="admin-root"></div>
             </section>
 
             <!-- Exam guide -->

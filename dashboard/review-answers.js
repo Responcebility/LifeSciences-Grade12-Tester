@@ -1,8 +1,9 @@
 // dashboard/review-answers.js - question-by-question review of a finished test
 import { auth } from '../auth/firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getQuestionByKey, getPaper, topicName } from './questions.js';
+import { getQuestionByKey, getPaper, topicName, useQuestionBank } from './questions.js';
 import { loadResult } from './data.js';
+import { loadQuestionsFromFirestore } from './school-data.js';
 import { escapeHtml, formatDuration, initThemeToggle } from '../shared/ui.js';
 
 const root = document.getElementById('review-root');
@@ -18,6 +19,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     try {
+        useQuestionBank(await loadQuestionsFromFirestore());
         review = await loadReview(user);
     } catch (error) {
         console.error('Could not load review:', error);

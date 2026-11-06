@@ -112,3 +112,28 @@ export function initThemeToggle(buttons, onChange) {
 export function cssVar(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
+
+// Dates are stored as 'YYYY-MM-DD' in the learner's local time
+export function todayISO(offsetDays = 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function daysUntil(isoDate) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const due = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((due - today) / 86400000);
+}
+
+export function dueLabel(isoDate) {
+    const days = daysUntil(isoDate);
+    if (days < 0) return days === -1 ? 'Was due yesterday' : `Was due ${-days} days ago`;
+    if (days === 0) return 'Due today';
+    if (days === 1) return 'Due tomorrow';
+    if (days < 7) return `Due in ${days} days`;
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return `Due ${new Date(y, m - 1, d).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}`;
+}

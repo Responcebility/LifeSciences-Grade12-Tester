@@ -1163,16 +1163,15 @@ export const QUESTION_DATABASE = {
     ]
 };
 
-// Papers shown in the app. Only papers with questions in QUESTION_DATABASE are listed.
+// Every paper the app knows about. A paper is listed once it has at least one question.
 // The keys of the first two sets are kept as-is so saved results still match.
-export const PAPERS = [
+export const PAPER_DEFINITIONS = [
     { key: 'practice-p1', title: 'Practice Paper 1', group: 'Exam-style papers', description: 'Reproduction, nervous system, senses, hormones, homeostasis and plant responses' },
     { key: 'practice-p2', title: 'Practice Paper 2', group: 'Exam-style papers', description: 'DNA, meiosis, genetics, evolution and human evolution' },
     { key: '2023-nov-1', title: 'Mixed Practice Set A', group: 'Mixed practice sets', description: 'Questions from across the syllabus' },
-    { key: '2023-nov-2', title: 'Mixed Practice Set B', group: 'Mixed practice sets', description: 'Short set from across the syllabus' }
-]
-    .map(paper => ({ ...paper, questionCount: (QUESTION_DATABASE[paper.key] || []).length }))
-    .filter(paper => paper.questionCount > 0);
+    { key: '2023-nov-2', title: 'Mixed Practice Set B', group: 'Mixed practice sets', description: 'Short set from across the syllabus' },
+    { key: 'extra', title: 'Extra Practice Set', group: 'Mixed practice sets', description: 'New questions added by PowerPrep' }
+];
 
 // grade12: part of the Grade 12 CAPS content; the rest is earlier-grade revision
 export const TOPICS = {
@@ -1202,13 +1201,40 @@ export function topicName(topic) {
     return TOPICS[topic]?.name || (topic ? topic.charAt(0).toUpperCase() + topic.slice(1) : 'Unknown');
 }
 
-// Every question gets a unique key ("paper#id") so results can be stored per question
-const ALL_QUESTIONS = Object.entries(QUESTION_DATABASE).flatMap(([paper, questions]) =>
+// Built-in questions. Every question gets a unique key ("paper#id") so results can be stored per question.
+export const BUILT_IN_QUESTIONS = Object.entries(QUESTION_DATABASE).flatMap(([paper, questions]) =>
     questions.map(q => ({ ...q, paper, key: `${paper}#${q.id}` }))
 );
 
+let ALL_QUESTIONS = BUILT_IN_QUESTIONS;
+// Includes hidden questions, so old results can still be reviewed
+let KNOWN_QUESTIONS = BUILT_IN_QUESTIONS;
+
+function buildPapers() {
+    return PAPER_DEFINITIONS
+        .map(paper => ({ ...paper, questionCount: ALL_QUESTIONS.filter(q => q.paper === paper.key).length }))
+        .filter(paper => paper.questionCount > 0);
+}
+
+// Live binding: modules that import PAPERS see the list after loadQuestionBank runs
+export let PAPERS = buildPapers();
+
+// Once an admin has imported the questions into Firestore, that copy is used instead of
+// the built-in one, so questions can be added and edited from the admin area.
+export function useQuestionBank(questions) {
+    const active = questions.filter(q => q.active !== false);
+    ALL_QUESTIONS = active.length ? active : BUILT_IN_QUESTIONS;
+    const keys = new Set(questions.map(q => q.key));
+    KNOWN_QUESTIONS = [...questions, ...BUILT_IN_QUESTIONS.filter(q => !keys.has(q.key))];
+    PAPERS = buildPapers();
+}
+
+export function getAllQuestions() {
+    return ALL_QUESTIONS;
+}
+
 export function getQuestionByKey(key) {
-    return ALL_QUESTIONS.find(q => q.key === key) || null;
+    return KNOWN_QUESTIONS.find(q => q.key === key) || null;
 }
 
 export function getPaper(paperKey) {

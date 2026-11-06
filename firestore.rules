@@ -3,20 +3,108 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Each learner can only read and write their own profile
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function hasRole(roles) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/roles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in roles;
+    }
+
+    function isAdmin() {
+      return hasRole(['admin']);
+    }
+
+    function isTeacher() {
+      return hasRole(['teacher', 'admin']);
+    }
+
+    // Roles can only be given out by an admin. Add the first admin by hand in the Firebase console.
+    match /roles/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isAdmin() && request.auth.uid != uid;
+    }
+
+    match /teacherRequests/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow create: if isSelf(uid) && request.resource.data.status == 'pending';
+      allow update: if isAdmin()
+        || (isSelf(uid) && request.resource.data.status == 'pending' && resource.data.status != 'approved');
+      allow delete: if isAdmin();
+    }
+
+    // Each learner owns their profile; admins can read all profiles
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isSelf(uid);
     }
 
     // Test results belong to the learner who created them and can't be edited afterwards
     match /testResults/{resultId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.score is number
         && request.resource.data.score >= 0
         && request.resource.data.score <= 100;
       allow update, delete: if false;
+    }
+
+    // Everyone signed in can read the question bank; only admins can change it
+    match /questions/{questionId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Join codes: learners can look up one code, but not list them all
+    match /classCodes/{code} {
+      allow get: if signedIn();
+      allow create: if isTeacher() && request.resource.data.teacherId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.teacherId == request.auth.uid;
+    }
+
+    match /classes/{classId} {
+      function classData() {
+        return get(/databases/$(database)/documents/classes/$(classId)).data;
+      }
+
+      function isClassTeacher() {
+        return signedIn() && classData().teacherId == request.auth.uid;
+      }
+
+      function isMember() {
+        return signedIn() && exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid));
+      }
+
+      allow read: if signedIn() && (resource.data.teacherId == request.auth.uid || isMember() || isAdmin());
+      allow create: if isTeacher() && request.resource.data.teacherId == request.auth.uid;
+      allow update: if signedIn() && resource.data.teacherId == request.auth.uid
+        && request.resource.data.teacherId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.teacherId == request.auth.uid;
+
+      // A learner writes their own row (joining with a code, progress updates); the teacher can read and remove rows
+      match /members/{uid} {
+        allow read: if isSelf(uid) || isClassTeacher() || isAdmin();
+        allow create, update: if isSelf(uid);
+        allow delete: if isSelf(uid) || isClassTeacher();
+      }
+
+      match /assignments/{assignmentId} {
+        allow read: if isClassTeacher() || isMember() || isAdmin();
+        allow write: if isClassTeacher();
+
+        match /submissions/{uid} {
+          allow read: if isSelf(uid) || isClassTeacher() || isAdmin();
+          allow create, update: if isSelf(uid) && isMember();
+          allow delete: if isClassTeacher();
+        }
+      }
     }
   }
 }

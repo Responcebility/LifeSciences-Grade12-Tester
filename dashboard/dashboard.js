@@ -12,7 +12,8 @@ import {
     getQuestionByKey,
     countQuestionsByTopic,
     shuffle,
-    timeLimitFor
+    timeLimitFor,
+    useQuestionBank
 } from './questions.js';
 import {
     loadProfile,
@@ -23,9 +24,20 @@ import {
     dayStreak
 } from './data.js';
 import { renderScoreChart, renderTopicChart } from './progress.js';
-import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle } from '../shared/ui.js';
+import {
+    loadRole,
+    loadQuestionsFromFirestore,
+    loadLearnerClasses,
+    loadAssignments,
+    loadMySubmission,
+    syncClassProgress,
+    saveSubmission
+} from './school-data.js';
+import { renderClasses } from './classes.js';
+import { renderAdmin } from './admin.js';
+import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle, daysUntil, dueLabel } from '../shared/ui.js';
 
-const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'guide'];
+const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'classes', 'guide', 'admin'];
 const TONES = ['tone-blue', 'tone-yellow', 'tone-green', 'tone-sky', 'tone-orange'];
 const STUDY_TIPS = [
     'Small, steady practice beats last-minute cramming.',
@@ -36,10 +48,12 @@ const STUDY_TIPS = [
     'Teach a topic to a friend. If you can explain it, you know it.',
     'Check the marks: they tell you how much detail is expected.'
 ];
-const TOPIC_COUNTS = countQuestionsByTopic();
+let TOPIC_COUNTS = countQuestionsByTopic();
 
 let user = null;
+let role = 'learner';     // 'learner' | 'teacher' | 'admin' (from roles/{uid})
 let profile = null;
+let homeAssignments = [];
 let results = [];
 let activeTest = null;   // the test currently on screen
 let testTimer = null;
@@ -57,7 +71,18 @@ onAuthStateChanged(auth, (signedInUser) => {
     init();
 });
 
-function init() {
+// Shared with the classes and admin modules
+const app = {
+    get user() { return user; },
+    get profile() { return profile; },
+    get role() { return role; },
+    navigate,
+    refresh: () => refreshData(),
+    reloadQuestions,
+    startAssignment
+};
+
+async function init() {
     const name = user.displayName || '';
     document.getElementById('user-name').textContent = name || 'Learner';
     document.getElementById('user-email').textContent = user.email || '';
@@ -70,12 +95,21 @@ function init() {
     document.getElementById('welcome-quote').textContent = STUDY_TIPS[dayNumber % STUDY_TIPS.length];
 
     setupEventListeners();
-    renderQuickStart();
-    renderPapers();
-    renderTopics();
+    role = await loadRole(user.uid);
+    document.getElementById('nav-admin').hidden = role !== 'admin';
+    await reloadQuestions();
     renderResumeBanner();
     route();
     refreshData();
+}
+
+// Uses the Firestore question bank once an admin has imported it, otherwise the built-in one
+async function reloadQuestions() {
+    useQuestionBank(await loadQuestionsFromFirestore());
+    TOPIC_COUNTS = countQuestionsByTopic();
+    renderQuickStart();
+    renderPapers();
+    renderTopics();
 }
 
 function firstName() {
@@ -104,6 +138,10 @@ async function refreshData() {
     renderRecentTests();
     renderTopics();
     renderProgress();
+    renderHomeAssignments();
+    const page = currentPage();
+    if (page === 'classes') renderClasses(app);
+    if (page === 'admin') renderAdmin(app);
 }
 
 function setupEventListeners() {
@@ -127,6 +165,7 @@ function setupEventListeners() {
         if (kind === 'paper') startPaperTest(value);
         if (kind === 'topic') startTopicTest(value);
         if (kind === 'mixed') startMixedTest();
+        if (kind === 'assignment') startAssignment(homeAssignments[Number(value)]);
     });
 
     document.getElementById('prev-question').addEventListener('click', () => goToQuestion(activeTest.index - 1));
@@ -191,6 +230,12 @@ function route() {
         showToast('Test saved. You can resume it from the Home page.');
     }
 
+    if (page === 'admin' && role !== 'admin') {
+        history.replaceState(null, '', '#home');
+        showPage('home');
+        return;
+    }
+
     showPage(NAV_PAGES.includes(page) ? page : 'home');
 }
 
@@ -207,6 +252,8 @@ function showPage(page) {
 
     if (page === 'home') renderResumeBanner();
     if (page === 'progress') renderCharts();
+    if (page === 'classes') renderClasses(app);
+    if (page === 'admin') renderAdmin(app);
 }
 
 // === Home page ===
@@ -348,6 +395,66 @@ function renderResumeBanner() {
     });
 }
 
+// Tests set by the learner's teachers (hidden once they are more than a week overdue)
+async function renderHomeAssignments() {
+    const card = document.getElementById('assignments-card');
+    const classIds = profile?.classIds || [];
+    if (classIds.length === 0) {
+        homeAssignments = [];
+        card.innerHTML = '';
+        return;
+    }
+
+    try {
+        const classes = await loadLearnerClasses(user.uid, classIds);
+        const lists = await Promise.all(classes.map(async cls =>
+            (await loadAssignments(cls.id)).map(a => ({ ...a, className: cls.name }))));
+        const upcoming = lists.flat().filter(a => daysUntil(a.dueDate) >= -7);
+        homeAssignments = await Promise.all(upcoming.map(async a =>
+            ({ ...a, submission: await loadMySubmission(a.classId, a.id, user.uid) })));
+        homeAssignments.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    } catch (error) {
+        console.error('Could not load assignments:', error);
+        homeAssignments = [];
+    }
+
+    if (homeAssignments.length === 0) {
+        card.innerHTML = '';
+        return;
+    }
+
+    const todo = homeAssignments.filter(a => !a.submission).length;
+    card.innerHTML = `
+        <div class="card section-card assignments-card">
+            <div class="card-head">
+                <h2 class="card-title"><i class="fas fa-chalkboard-user"></i> Set by your teacher</h2>
+                <span class="badge ${todo ? 'badge-warning' : 'badge-success'}">${todo ? `${todo} to do` : 'All done'}</span>
+            </div>
+            <ul class="assignment-list">
+                ${homeAssignments.map((a, i) => {
+                    const days = daysUntil(a.dueDate);
+                    const status = a.submission
+                        ? `<span class="badge badge-success"><i class="fas fa-check"></i> Done · ${a.submission.bestScore ?? a.submission.score}%</span>`
+                        : `<span class="badge ${days < 0 ? 'badge-danger' : days <= 1 ? 'badge-warning' : ''}">${dueLabel(a.dueDate)}</span>`;
+                    return `
+                        <li class="assignment-row ${a.submission ? 'is-done' : ''}">
+                            <span class="assignment-icon"><i class="fas fa-${a.submission ? 'check' : 'pen-to-square'}"></i></span>
+                            <div class="assignment-info">
+                                <strong>${escapeHtml(a.title)}</strong>
+                                <small>${escapeHtml(a.className)}</small>
+                            </div>
+                            ${status}
+                            <button type="button" class="btn ${a.submission ? 'btn-secondary' : 'btn-primary'} btn-sm" data-start="assignment:${i}">
+                                ${a.submission ? 'Try again' : 'Start'}
+                            </button>
+                        </li>
+                    `;
+                }).join('')}
+            </ul>
+        </div>
+    `;
+}
+
 // === Papers & topics pages ===
 
 function renderPapers() {
@@ -450,30 +557,38 @@ function renderCharts() {
 
 // === Starting tests ===
 
-async function startPaperTest(paperKey) {
+async function startPaperTest(paperKey, assignment = null) {
     const paper = getPaper(paperKey);
     const questions = getPaperQuestions(paperKey);
     if (!paper || questions.length === 0) {
         showToast('This paper doesn\'t have any questions yet.');
         return;
     }
-    await beginTest({ type: paperKey, title: paper.title, questions });
+    await beginTest({ type: paperKey, title: assignment?.title || paper.title, questions, assignment });
 }
 
-async function startTopicTest(topic) {
+async function startTopicTest(topic, assignment = null) {
     const questions = shuffle(getQuestionsByTopic(topic)).slice(0, 10);
     if (questions.length === 0) {
         showToast('There are no questions for this topic yet.');
         return;
     }
-    await beginTest({ type: `topic-${topic}`, title: `${topicName(topic)} practice`, questions });
+    await beginTest({ type: `topic-${topic}`, title: assignment?.title || `${topicName(topic)} practice`, questions, assignment });
 }
 
-async function startMixedTest() {
-    await beginTest({ type: 'mixed', title: 'Mixed practice', questions: getMixedQuestions(10) });
+async function startMixedTest(assignment = null) {
+    await beginTest({ type: 'mixed', title: assignment?.title || 'Mixed practice', questions: getMixedQuestions(10), assignment });
 }
 
-async function beginTest({ type, title, questions }) {
+function startAssignment(assignment) {
+    if (!assignment) return;
+    const link = { classId: assignment.classId, id: assignment.id, title: assignment.title };
+    if (assignment.kind === 'paper') startPaperTest(assignment.target, link);
+    else if (assignment.kind === 'topic') startTopicTest(assignment.target, link);
+    else startMixedTest(link);
+}
+
+async function beginTest({ type, title, questions, assignment = null }) {
     const saved = readSavedTest();
     if (saved) {
         const ok = await showDialog({
@@ -489,6 +604,7 @@ async function beginTest({ type, title, questions }) {
     activeTest = {
         type,
         title,
+        assignment,
         questions,
         // Options are shown in a random order; answers are always stored as the original option index
         optionOrders: questions.map(q => shuffle(q.options.map((_, i) => i))),
@@ -516,6 +632,7 @@ function saveActiveTest() {
         localStorage.setItem(storageKey(), JSON.stringify({
             type: activeTest.type,
             title: activeTest.title,
+            assignment: activeTest.assignment,
             questionKeys: activeTest.questions.map(q => q.key),
             optionOrders: activeTest.optionOrders,
             answers: activeTest.answers,
@@ -554,6 +671,7 @@ function resumeSavedTest() {
     activeTest = {
         type: saved.type,
         title: saved.title,
+        assignment: saved.assignment || null,
         questions,
         optionOrders: questions.map((q, i) => {
             const order = saved.optionOrders?.[i];
@@ -755,6 +873,15 @@ async function submitTest({ timeUp = false } = {}) {
         console.error('Could not save result:', error);
         lastResult.saveState = 'failed';
     }
+
+    // Keep teachers up to date; these don't block the results page
+    if (lastResult.saveState === 'saved') {
+        if (profile?.classIds?.length) await syncClassProgress(user, profile.classIds, result);
+        if (result.assignment) {
+            await saveSubmission(user, result.assignment, result).catch(error =>
+                console.error('Could not record assignment:', error));
+        }
+    }
     renderSaveState();
     refreshData();
 }
@@ -803,7 +930,8 @@ function scoreTest(test) {
         weakestTopic: weakest,
         topicStats,
         questionKeys: test.questions.map(q => q.key),
-        answers: [...test.answers]
+        answers: [...test.answers],
+        assignment: test.assignment || null
     };
 }
 

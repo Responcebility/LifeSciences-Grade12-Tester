@@ -1273,6 +1273,601 @@ kbd {
     font-weight: 500;
 }
 
+/* === Shared bits for classes and admin === */
+.muted {
+    color: var(--text-3);
+}
+
+.muted-note {
+    color: var(--text-3);
+    font-size: 14px;
+    margin: 4px 0 8px;
+}
+
+select.input {
+    appearance: none;
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237584a8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+}
+
+.textarea {
+    min-height: 0;
+    padding: 10px 14px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0 14px;
+}
+
+.tabs {
+    display: flex;
+    gap: 6px;
+    padding: 5px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-2);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.tab[aria-selected="true"] {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.toolbar .card-title {
+    margin-bottom: 0;
+}
+
+.search-input {
+    max-width: 280px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.filter-row .search-input {
+    max-width: none;
+}
+
+.avatar.small {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+}
+
+.stat-value-text {
+    font-size: 17px;
+    letter-spacing: -0.01em;
+}
+
+.back-btn {
+    margin: -8px 0 12px -12px;
+}
+
+.danger-zone {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+/* === Classes page === */
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.class-create {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px;
+    border-style: dashed;
+    border-width: 2px;
+    border-color: var(--border-strong);
+    box-shadow: none;
+}
+
+.class-create h3 {
+    font-size: 17px;
+}
+
+.class-create p {
+    color: var(--text-2);
+    font-size: 14px;
+    margin-top: -4px;
+}
+
+.class-create-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.code-input {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-weight: 800;
+    font-size: 18px;
+    text-align: center;
+}
+
+.code-input::placeholder {
+    letter-spacing: 0.3em;
+    font-weight: 600;
+}
+
+.class-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.class-card-top {
+    padding: 18px 20px;
+}
+
+.class-code-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.class-code {
+    font-size: 26px;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+}
+
+.class-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    flex: 1;
+}
+
+.class-card-body h3 {
+    font-size: 17px;
+}
+
+.class-card-body p {
+    color: var(--text-2);
+    font-size: 14px;
+    flex: 1;
+}
+
+.class-card-body .badge {
+    align-self: flex-start;
+}
+
+.teacher-request {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px;
+    margin-top: 28px;
+    background-image: var(--pattern-on-light);
+    background-size: 240px 240px;
+}
+
+.teacher-request h3 {
+    font-size: 17px;
+    margin-bottom: 4px;
+}
+
+.teacher-request p {
+    color: var(--text-2);
+    font-size: 14px;
+}
+
+.teacher-request-body {
+    flex: 1;
+}
+
+.teacher-request-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 18px;
+}
+
+.inline-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    max-width: 520px;
+}
+
+.class-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 26px 30px;
+    border-radius: 22px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-lg);
+}
+
+.class-hero-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.class-hero h2 {
+    font-size: 28px;
+}
+
+.class-hero-meta {
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 4px;
+}
+
+.code-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 22px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px dashed rgba(255, 255, 255, 0.4);
+}
+
+.code-box span {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.code-box strong {
+    font-size: 30px;
+    letter-spacing: 0.2em;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* Set tests */
+.assignment-form .btn {
+    margin-top: 4px;
+}
+
+.assignment-admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.assignment-admin {
+    padding: 16px 18px;
+}
+
+.assignment-admin-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.assignment-admin-head h3 {
+    font-size: 15px;
+}
+
+.assignment-admin-head small {
+    color: var(--text-3);
+    font-size: 13px;
+}
+
+.assignment-admin-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.submission-slot:not(:empty) {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.submission-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 10px;
+}
+
+.submission-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 6px 18px;
+}
+
+.submission-list li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.submission-list small {
+    color: var(--text-3);
+    font-size: 12px;
+    min-width: 64px;
+    text-align: right;
+}
+
+.submission-list .is-missing span:first-child {
+    color: var(--text-3);
+}
+
+/* Learner home: tests set by a teacher */
+.assignments-card {
+    border-top: 4px solid var(--accent);
+}
+
+.assignments-card .card-title i {
+    color: var(--primary);
+    margin-right: 6px;
+}
+
+.assignment-list {
+    list-style: none;
+}
+
+.assignment-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+}
+
+.assignment-row:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.assignment-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.assignment-row.is-done .assignment-icon {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.assignment-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.assignment-info small {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+/* === Admin === */
+.notice-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.notice-card > div {
+    flex: 1;
+    min-width: 240px;
+}
+
+.notice-card h3 {
+    font-size: 16px;
+}
+
+.notice-card p {
+    color: var(--text-2);
+    font-size: 14px;
+}
+
+.notice-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.admin-list {
+    list-style: none;
+}
+
+.admin-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+}
+
+.admin-list li:first-child {
+    border-top: none;
+}
+
+.admin-list-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-list-info small {
+    color: var(--text-3);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.question-admin-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.question-admin {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.question-admin.is-hidden {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.question-admin-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.question-admin-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.question-admin-text {
+    font-weight: 600;
+}
+
+.question-admin-answer {
+    font-size: 13px;
+    color: var(--success);
+    margin-top: 4px;
+}
+
+.question-admin-answer i {
+    margin-right: 4px;
+}
+
+.question-admin-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.dialog-wide {
+    max-width: 640px;
+}
+
+.options-editor {
+    border: none;
+    margin-bottom: 16px;
+}
+
+.options-editor legend {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 8px;
+}
+
+.option-editor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.option-editor input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--success);
+    flex-shrink: 0;
+}
+
+.option-editor input[type="radio"]:checked + .option-label {
+    background: var(--success);
+    color: #ffffff;
+}
+
 /* === Responsive === */
 @media (max-width: 1100px) {
     .stats-grid {
@@ -1390,6 +1985,19 @@ kbd {
     .guide-grid {
         grid-template-columns: 1fr;
     }
+
+    /* The bottom bar has room for six items; the exam guide is linked from the Papers page */
+    .nav-secondary {
+        display: none;
+    }
+
+    .filter-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-row .search-input {
+        grid-column: 1 / -1;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1490,8 +2098,48 @@ kbd {
         width: 100%;
     }
 
-    .resume-banner {
+    .resume-banner,
+    .assignment-row,
+    .question-admin,
+    .admin-list li {
         flex-wrap: wrap;
+    }
+
+    .assignment-row .btn,
+    .admin-list li .btn {
+        flex: 1;
+    }
+
+    .assignment-info,
+    .admin-list-info {
+        flex-basis: calc(100% - 60px);
+    }
+
+    .inline-form,
+    .teacher-request {
+        flex-direction: column;
+    }
+
+    .class-hero {
+        padding: 22px 20px;
+    }
+
+    .code-box {
+        width: 100%;
+    }
+
+    .assignment-admin-head {
+        flex-wrap: wrap;
+    }
+
+    .tabs {
+        width: 100%;
+    }
+
+    .tab {
+        flex: 1;
+        justify-content: center;
+        padding: 9px 10px;
     }
 
     .resume-actions {
@@ -1535,7 +2183,9 @@ kbd {
         background: transparent;
     }
 
-    .history-table td[data-label="Test"] { grid-column: 1; }
+    .history-table td[data-label="Test"],
+    .history-table td[data-label="Learner"],
+    .history-table td[data-label="Name"] { grid-column: 1; }
     .history-table td[data-label="Score"] { grid-column: 2; grid-row: 1; text-align: right; }
     .history-table td[data-label="Date"],
     .history-table td[data-label="Time"],
