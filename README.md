@@ -87,7 +87,7 @@ firestore.indexes.json  Index needed by the history queries
 - Questions live in `dashboard/questions.js`. They are **exam-style practice questions** written for this app, not reproductions of official DBE papers.
 - Practice Papers 1 and 2 follow the DBE split of topics between the two papers; the mixed sets draw from the whole syllabus.
 - Answer options are shuffled in every test; answers are stored against the original option order.
-- To add a paper, add its questions under a new key in `QUESTION_DATABASE` and list it in `PAPERS`.
+- To add a paper, add its questions under a new key in `QUESTION_DATABASE` and list it in `PAPER_DEFINITIONS` (or add questions from Admin → Question bank).
 - `users/{uid}` holds each learner's running totals and per-topic stats; `testResults` holds one document per finished test.
 
 ## 🔐 Security
