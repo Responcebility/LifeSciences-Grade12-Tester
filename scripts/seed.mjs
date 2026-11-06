@@ -35,22 +35,23 @@ const auth = getAuth();
 const db = getFirestore();
 
 // === Who to create ===
-const ADMIN = { email: 'admin@powerprep.test', name: 'PowerPrep Admin' };
+// example.com is reserved for testing, so these addresses can never belong to a real person
+const ADMIN = { email: 'admin@example.com', name: 'PowerPrep Admin' };
 
 const TEACHERS = [
-    { email: 'n.dlamini@powerprep.test', name: 'Mr Nkosi Dlamini', school: 'Soweto High School' },
-    { email: 'a.naidoo@powerprep.test', name: 'Ms Anisha Naidoo', school: 'Durban North College' }
+    { email: 'teacher1@example.com', name: 'Mr Nkosi Dlamini', school: 'Soweto High School' },
+    { email: 'teacher2@example.com', name: 'Ms Anisha Naidoo', school: 'Durban North College' }
 ];
 
 // skill: chance of answering correctly; weak: topics they find harder
 const LEARNERS = [
-    { email: 'thandi@powerprep.test', name: 'Thandi Mokoena', skill: 0.82, weak: ['genetics'], teacher: 0 },
-    { email: 'sipho@powerprep.test', name: 'Sipho Khumalo', skill: 0.64, weak: ['meiosis', 'dna'], teacher: 0 },
-    { email: 'lerato@powerprep.test', name: 'Lerato Molefe', skill: 0.71, weak: ['homeostasis'], teacher: 0 },
-    { email: 'aisha@powerprep.test', name: 'Aisha Patel', skill: 0.9, weak: [], teacher: 1 },
-    { email: 'johan@powerprep.test', name: 'Johan van Wyk', skill: 0.55, weak: ['evolution', 'senses'], teacher: 1 },
+    { email: 'learner1@example.com', name: 'Thandi Mokoena', skill: 0.82, weak: ['genetics'], teacher: 0 },
+    { email: 'learner2@example.com', name: 'Sipho Khumalo', skill: 0.64, weak: ['meiosis', 'dna'], teacher: 0 },
+    { email: 'learner3@example.com', name: 'Lerato Molefe', skill: 0.71, weak: ['homeostasis'], teacher: 0 },
+    { email: 'learner4@example.com', name: 'Aisha Patel', skill: 0.9, weak: [], teacher: 1 },
+    { email: 'learner5@example.com', name: 'Johan van Wyk', skill: 0.55, weak: ['evolution', 'senses'], teacher: 1 },
     // Practises on their own and has asked to become a teacher (shows up in Admin → Teachers)
-    { email: 'zanele@powerprep.test', name: 'Zanele Mthembu', skill: 0.68, weak: ['reproduction'], teacher: null, requestsTeacher: 'Pretoria Girls High' }
+    { email: 'learner6@example.com', name: 'Zanele Mthembu', skill: 0.68, weak: ['reproduction'], teacher: null, requestsTeacher: 'Pretoria Girls High' }
 ];
 
 const CLASSES = [

@@ -65,17 +65,17 @@ Teachers ask for access on their **Classes** page; approve them from **Admin →
    ```bash
    cd scripts
    npm install
-   node seed.mjs --key ../service-account.json --password 123456 --admin-password "<a strong password>"
+   node seed.mjs --key ../service-account.json
    ```
 
-| Role | Email |
-|---|---|
-| Admin | admin@powerprep.test |
-| Teacher | n.dlamini@powerprep.test (class code `LS2BZA`) |
-| Teacher | a.naidoo@powerprep.test (class code `LS2CZA`) |
-| Learners | thandi@, sipho@, lerato@, aisha@, johan@, zanele@powerprep.test |
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@example.com | 123456 |
+| Teacher | teacher1@example.com (class code `LS2BZA`) | 123456 |
+| Teacher | teacher2@example.com (class code `LS2CZA`) | 123456 |
+| Learners | learner1@example.com … learner6@example.com | 123456 |
 
-The script can be run again safely; it updates the same accounts. Give the admin a strong password on a live site.
+The script can be run again safely; it updates the same accounts. These are test accounts: before a real pilot, run it with `--admin-password "<a strong password>"` or delete them.
 
 ## 🛠 Tech stack
 
