@@ -3,100 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Answers - PowerPrep</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <title>Review answers | PowerPrep</title>
+    <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="review-answers.css">
 </head>
-<body class="dashboard">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-dna"></i>
-            <h2>Life Sciences PowerPrep</h2>
-        </div>
-        
-        <div class="user-info">
-            <div class="avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <h3 id="user-name">Student</h3>
-            <p id="user-email">student@example.com</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-item">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="review-answers.html" class="nav-item active">
-                <i class="fas fa-search"></i>
-                <span>Review Answers</span>
-            </a>
-        </nav>
-        
-        <button id="logout-btn" class="btn-logout">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </button>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="page active" id="review-page">
-            <div class="page-header">
-                <h1>Review Your Test Answers</h1>
-                <p>Detailed analysis of your test performance with correct answers and explanations</p>
-            </div>
-            
-            <!-- Test Summary -->
-            <div class="test-summary-card">
-                <div class="summary-header">
-                    <div>
-                        <h3 id="test-title">Loading test data...</h3>
-                        <p id="test-info">Loading...</p>
-                    </div>
-                    <div class="score-badge">
-                        <span class="score-value" id="test-score-display">0%</span>
-                    </div>
-                </div>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-check-circle" style="color: #2ed573;"></i>
-                        <span><span id="test-correct">0</span> Correct</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-times-circle" style="color: #ff4757;"></i>
-                        <span><span id="test-incorrect">0</span> Incorrect</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-question-circle" style="color: #ffa502;"></i>
-                        <span><span id="test-total">0</span> Total Questions</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-percentage" style="color: #00d4ff;"></i>
-                        <span><span id="test-percentage">0</span>% Score</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Questions Review Container -->
-            <div class="questions-review-list" id="questions-container">
-                <!-- Questions will be loaded by JavaScript -->
-                <div class="loading-message">
-                    <i class="fas fa-spinner fa-spin"></i> Loading your test review...
-                </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="review-actions">
-                <button class="btn-primary" id="btn-back-dashboard">
-                    <i class="fas fa-home"></i> Back to Dashboard
-                </button>
+<body>
+    <header class="review-topbar">
+        <a href="index.html" class="btn btn-ghost"><i class="fas fa-arrow-left"></i><span>Dashboard</span></a>
+        <a href="index.html" class="brand">
+            <span class="brand-mark"><i class="fas fa-dna"></i></span>
+            PowerPrep
+        </a>
+        <button class="icon-btn theme-toggle" type="button"></button>
+    </header>
+
+    <main class="review-main">
+        <div id="review-root">
+            <div class="empty-state">
+                <span class="spinner" style="display:inline-block"></span>
+                <p>Loading your answers…</p>
             </div>
         </div>
     </main>
-    
+
     <script type="module" src="review-answers.js"></script>
 </body>
 </html>

@@ -3,1224 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | LIFE SCIENCES EXAM PREP</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="dashboard.css">
+    <title>Dashboard | PowerPrep</title>
+    <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Dashboard Styles */
-        .dashboard {
-            display: flex;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.08);
-            /* Removed backdrop-filter - causing compatibility issues */
-            padding: 25px 20px;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-header i {
-            font-size: 28px;
-            color: #00d4ff;
-        }
-
-        .sidebar-header h2 {
-            color: white;
-            font-size: 24px;
-            background: linear-gradient(135deg, #00d4ff, #0099ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .user-info {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-
-        .avatar {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 30px;
-        }
-
-        #user-name {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        #user-email {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 20px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .nav-item i {
-            width: 20px;
-            font-size: 18px;
-        }
-
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 10px;
-            width: 100%;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .page {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .page-header {
-            margin-bottom: 40px;
-        }
-
-        .page-header h1 {
-            font-size: 36px;
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .page-header p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 18px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card i {
-            font-size: 32px;
-            color: #00d4ff;
-            margin-bottom: 15px;
-        }
-
-        .stat-card h3 {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: white;
-        }
-
-        /* Quick Actions */
-        .quick-actions {
-            margin-bottom: 40px;
-        }
-
-        .quick-actions h2 {
-            color: white;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .action-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: left;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-3px);
-        }
-
-        .action-btn i {
-            font-size: 28px;
-            color: #00d4ff;
-            margin-bottom: 15px;
-        }
-
-        .action-btn span {
-            display: block;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .action-btn small {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-        }
-
-        /* Test Categories */
-        .test-categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
-        .category-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .category-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 30px;
-            color: white;
-        }
-
-        .category-card h3 {
-            color: white;
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        .category-card p {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .btn-start-test {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-start-test:hover {
-            transform: scale(1.05);
-        }
-
-        /* Topics Grid */
-        .topics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .topic-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .topic-card h3 {
-            color: #00d4ff;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .topic-card p {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .topic-stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-        }
-
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-topic {
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid #667eea;
-            color: #667eea;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-topic:hover {
-            background: rgba(102, 126, 234, 0.3);
-        }
-
-        /* Paper Buttons */
-        .paper-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-paper {
-            flex: 1;
-            padding: 10px;
-            background: rgba(102, 126, 234, 0.3);
-            border: 1px solid #667eea;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-paper:hover {
-            background: rgba(102, 126, 234, 0.5);
-        }
-
-        /* Test Interface */
-        .test-header {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .test-info {
-            margin-bottom: 15px;
-        }
-
-        .test-info h2 {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .test-info p {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .test-timer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            width: fit-content;
-        }
-
-        .test-timer i {
-            color: #00d4ff;
-        }
-
-        #timer {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .test-progress {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #00d4ff, #0099ff);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        #question-counter {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        /* Question Container */
-        .question-container {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .question-header {
-            margin-bottom: 30px;
-        }
-
-        .question-meta {
-            display: flex;
-            justify-content: space-between;
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        #question-text {
-            color: white;
-            font-size: 20px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .diagram-container {
-            margin: 20px 0;
-            border-radius: 10px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            text-align: center;
-            display: none;
-        }
-
-        .diagram-image img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .diagram-image img:hover {
-            transform: scale(1.02);
-        }
-
-        .diagram-image small {
-            display: block;
-            color: #667eea;
-            margin-top: 5px;
-            font-size: 12px;
-        }
-
-        /* Options */
-        .options-container {
-            margin-bottom: 30px;
-        }
-
-        .option {
-            display: flex;
-            align-items: center;
-            padding: 18px 20px;
-            margin: 12px 0;
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .option:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #667eea;
-        }
-
-        .option.selected {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: #667eea;
-        }
-
-        .option-label {
-            background: #667eea;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .option-text {
-            color: white;
-            font-size: 16px;
-            line-height: 1.5;
-        }
-
-        /* Test Navigation */
-        .test-navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding-top: 25px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-nav {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-nav:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-nav:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-flag {
-            background: rgba(255, 71, 87, 0.1);
-            border: 1px solid rgba(255, 71, 87, 0.3);
-            color: #ff4757;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-flag:hover {
-            background: rgba(255, 71, 87, 0.15);
-        }
-
-        .btn-flag.flagged {
-            background: rgba(255, 71, 87, 0.2);
-            border-color: #ff4757;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #2ed573, #26c464);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .btn-submit:hover {
-            transform: scale(1.05);
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .result-modal {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
-        }
-
-        .result-modal h2 {
-            color: white;
-            margin-bottom: 25px;
-            font-size: 28px;
-        }
-
-        .result-stats {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        .result-stats p {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .result-stats strong {
-            color: #00d4ff;
-        }
-
-        .result-modal button {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .result-modal button:hover {
-            transform: scale(1.05);
-        }
-
-        /* Image Modal */
-        .image-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            position: relative;
-        }
-
-        .modal-content img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-        }
-
-        .close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: white;
-            font-size: 40px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .dashboard {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .sidebar-nav {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .nav-item {
-                flex: 1;
-                min-width: 120px;
-                justify-content: center;
-            }
-            
-            .btn-logout {
-                width: auto;
-                margin-top: 20px;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 20px;
-            }
-            
-            .page-header h1 {
-                font-size: 28px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .test-navigation {
-                flex-wrap: wrap;
-            }
-            
-            .btn-nav, .btn-flag, .btn-submit {
-                flex: 1;
-                justify-content: center;
-            }
-            
-            .topic-card h3 {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .actions-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .test-categories {
-                grid-template-columns: 1fr;
-            }
-            
-            .topics-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .paper-buttons {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-dna"></i>
-                <h2>BioMind</h2>
+    <div class="app">
+        <!-- Mobile top bar -->
+        <header class="app-topbar">
+            <a href="#home" class="brand">
+                <span class="brand-mark"><i class="fas fa-dna"></i></span>
+                PowerPrep
+            </a>
+            <div class="topbar-actions">
+                <button class="icon-btn theme-toggle" type="button"></button>
+                <button class="icon-btn logout-btn" type="button" aria-label="Log out" title="Log out"><i class="fas fa-arrow-right-from-bracket"></i></button>
             </div>
-            
-            <div class="user-info">
-                <div class="avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3 id="user-name">Loading...</h3>
-                <p id="user-email">Loading...</p>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <a href="#home" class="nav-item active" data-page="home">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
-                </a>
-                <a href="#tests" class="nav-item" data-page="tests">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span>Past Papers</span>
-                </a>
-                <a href="#topics" class="nav-item" data-page="topics">
-                    <i class="fas fa-book"></i>
-                    <span>Topics</span>
-                </a>
-                <a href="#progress" class="nav-item" data-page="progress">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Progress</span>
-                </a>
-                <a href="#papers" class="nav-item" data-page="papers">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Paper Structure</span>
-                </a>
+        </header>
+
+        <!-- Sidebar (bottom tab bar on phones) -->
+        <aside class="sidebar">
+            <a href="#home" class="brand sidebar-brand">
+                <span class="brand-mark"><i class="fas fa-dna"></i></span>
+                PowerPrep
+            </a>
+
+            <nav class="sidebar-nav" aria-label="Main">
+                <a href="#home" class="nav-item" data-page="home"><i class="fas fa-house"></i><span>Home</span></a>
+                <a href="#papers" class="nav-item" data-page="papers"><i class="far fa-file-lines"></i><span>Papers</span></a>
+                <a href="#topics" class="nav-item" data-page="topics"><i class="fas fa-layer-group"></i><span>Topics</span></a>
+                <a href="#progress" class="nav-item" data-page="progress"><i class="fas fa-chart-simple"></i><span>Progress</span></a>
+                <a href="#guide" class="nav-item" data-page="guide"><i class="far fa-circle-question"></i><span>Exam guide</span></a>
             </nav>
-            
-            <button id="logout-btn" class="btn-logout">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </button>
-        </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Home Page -->
-            <div id="home-page" class="page active">
+            <div class="sidebar-footer">
+                <div class="user-chip">
+                    <span class="avatar" id="user-initial">S</span>
+                    <div class="user-meta">
+                        <strong id="user-name">Loading…</strong>
+                        <span id="user-email"></span>
+                    </div>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="icon-btn theme-toggle" type="button"></button>
+                    <button class="btn btn-secondary logout-btn" type="button"><i class="fas fa-arrow-right-from-bracket"></i><span>Log out</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main" id="main">
+            <!-- Home -->
+            <section id="home-page" class="page" aria-labelledby="home-title">
                 <div class="page-header">
-                    <h1>Welcome back, <span id="greeting-name">Learner</span>!</h1>
-                    <p>Master Life Sciences with actual exam questions</p>
+                    <div>
+                        <p class="eyebrow" id="today-date"></p>
+                        <h1 id="home-title">Welcome back, <span id="greeting-name">Learner</span></h1>
+                    </div>
                 </div>
 
-                <!-- Quick Stats -->
+                <div id="resume-banner"></div>
+
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <i class="fas fa-file-alt"></i>
-                        <h3>Papers Attempted</h3>
-                        <p class="stat-number" id="papers-attempted">0</p>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="far fa-file-lines"></i></span>
+                        <span class="stat-label">Tests completed</span>
+                        <strong class="stat-value" id="stat-tests">–</strong>
                     </div>
-                    <div class="stat-card">
-                        <i class="fas fa-percentage"></i>
-                        <h3>Average Score</h3>
-                        <p class="stat-number" id="average-score">0%</p>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-percent"></i></span>
+                        <span class="stat-label">Average score</span>
+                        <strong class="stat-value" id="stat-average">–</strong>
                     </div>
-                    <div class="stat-card">
-                        <i class="fas fa-check-circle"></i>
-                        <h3>Questions Mastered</h3>
-                        <p class="stat-number" id="questions-mastered">0</p>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="far fa-circle-check"></i></span>
+                        <span class="stat-label">Questions correct</span>
+                        <strong class="stat-value" id="stat-correct">–</strong>
                     </div>
-                    <div class="stat-card">
-                        <i class="fas fa-clock"></i>
-                        <h3>Weakest Topic</h3>
-                        <p class="stat-number" id="weakest-topic">None</p>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-fire"></i></span>
+                        <span class="stat-label">Day streak</span>
+                        <strong class="stat-value" id="stat-streak">–</strong>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="quick-actions">
-                    <h2>Recent Past Papers</h2>
-                    <div class="actions-grid">
-                        <button class="action-btn" data-test="2023-nov-1">
-                            <i class="fas fa-calendar"></i>
-                            <span>2023 Nov Paper 1</span>
-                            <small>Actual DBE Exam • 8 questions</small>
-                        </button>
-                        <button class="action-btn" data-test="2023-nov-2">
-                            <i class="fas fa-calendar"></i>
-                            <span>2023 Nov Paper 2</span>
-                            <small>Actual DBE Exam • 9 questions</small>
-                        </button>
-                        <button class="action-btn" data-test="2022-nov-1">
-                            <i class="fas fa-calendar"></i>
-                            <span>2022 Nov Paper 1</span>
-                            <small>Actual DBE Exam • 6 questions</small>
-                        </button>
-                        <button class="action-btn" data-test="mixed">
-                            <i class="fas fa-random"></i>
-                            <span>Mixed Questions</span>
-                            <small>All papers • Adaptive</small>
-                        </button>
+                <div class="home-grid">
+                    <div class="card focus-card" id="focus-card">
+                        <!-- Filled by JavaScript -->
+                    </div>
+
+                    <div class="card quick-card">
+                        <h2 class="card-title">Quick start</h2>
+                        <div class="quick-list" id="quick-list">
+                            <!-- Filled by JavaScript -->
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Past Papers Page -->
-            <div id="tests-page" class="page">
+                <div class="card section-card">
+                    <div class="card-head">
+                        <h2 class="card-title">Recent tests</h2>
+                        <a href="#progress" class="text-link">See all</a>
+                    </div>
+                    <div id="recent-tests"></div>
+                </div>
+            </section>
+
+            <!-- Papers -->
+            <section id="papers-page" class="page" aria-labelledby="papers-title">
                 <div class="page-header">
-                    <h1>Past Exam Papers</h1>
-                    <p>Actual DBE and IEB papers (2020-2023)</p>
-                </div>
-
-                <div class="test-categories">
-                    <div class="category-card" data-category="2023-papers">
-                        <div class="category-icon">
-                            <i class="fas fa-file-contract"></i>
-                        </div>
-                        <h3>2023 Papers</h3>
-                        <p>November & June • DBE & IEB</p>
-                        <div class="paper-buttons">
-                            <button class="btn-paper" data-paper="2023-nov-1">Paper 1</button>
-                            <button class="btn-paper" data-paper="2023-nov-2">Paper 2</button>
-                        </div>
-                    </div>
-                    <div class="category-card" data-category="2022-papers">
-                        <div class="category-icon">
-                            <i class="fas fa-file-contract"></i>
-                        </div>
-                        <h3>2022 Papers</h3>
-                        <p>November & June • DBE & IEB</p>
-                        <div class="paper-buttons">
-                            <button class="btn-paper" data-paper="2022-nov-1">Paper 1</button>
-                            <button class="btn-paper" data-paper="2022-nov-2">Paper 2</button>
-                        </div>
-                    </div>
-                    <div class="category-card" data-category="2021-papers">
-                        <div class="category-icon">
-                            <i class="fas fa-file-contract"></i>
-                        </div>
-                        <h3>2021 Papers</h3>
-                        <p>November & June • DBE & IEB</p>
-                        <div class="paper-buttons">
-                            <button class="btn-paper" data-paper="2021-nov-1">Paper 1</button>
-                            <button class="btn-paper" data-paper="2021-nov-2">Paper 2</button>
-                        </div>
-                    </div>
-                    <div class="category-card" data-category="trial-papers">
-                        <div class="category-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <h3>Trial Papers</h3>
-                        <p>Gauteng, WC, KZN Trials</p>
-                        <div class="paper-buttons">
-                            <button class="btn-paper" data-paper="gauteng-2023">Gauteng</button>
-                            <button class="btn-paper" data-paper="wc-2023">W Cape</button>
-                        </div>
+                    <div>
+                        <h1 id="papers-title">Practice papers</h1>
+                        <p>Timed, exam-style multiple-choice papers written for this app.</p>
                     </div>
                 </div>
-            </div>
+                <div id="papers-list"></div>
+            </section>
 
-            <!-- Topics Page -->
-            <div id="topics-page" class="page">
+            <!-- Topics -->
+            <section id="topics-page" class="page" aria-labelledby="topics-title">
                 <div class="page-header">
-                    <h1>Syllabus Topics</h1>
-                    <p>Current Grade 12 Life Sciences Curriculum</p>
-                </div>
-
-                <div class="topics-grid">
-                    <div class="topic-card" data-topic="dna">
-                        <h3><i class="fas fa-dna"></i> DNA & Protein Synthesis</h3>
-                        <p>DNA replication, transcription, translation, mutations</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 10 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 75% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
-                    </div>
-                    <div class="topic-card" data-topic="genetics">
-                        <h3><i class="fas fa-sitemap"></i> Genetics & Inheritance</h3>
-                        <p>Mendelian genetics, pedigrees, genetic disorders, Punnett squares</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 12 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 68% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
-                    </div>
-                    <div class="topic-card" data-topic="evolution">
-                        <h3><i class="fas fa-fish"></i> Evolution</h3>
-                        <p>Natural selection, speciation, fossil evidence, adaptation</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 8 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 72% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
-                    </div>
-                    <div class="topic-card" data-topic="reproduction">
-                        <h3><i class="fas fa-baby"></i> Human Reproduction</h3>
-                        <p>Reproductive systems, gametogenesis, menstrual cycle, pregnancy</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 11 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 65% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
-                    </div>
-                    <div class="topic-card" data-topic="nervous">
-                        <h3><i class="fas fa-brain"></i> Nervous System</h3>
-                        <p>Neurons, synapses, reflex arcs, brain structure, neurotransmitters</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 9 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 70% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
-                    </div>
-                    <div class="topic-card" data-topic="homeostasis">
-                        <h3><i class="fas fa-thermometer-half"></i> Homeostasis</h3>
-                        <p>Thermoregulation, osmoregulation, negative feedback, kidney function</p>
-                        <div class="topic-stats">
-                            <span class="stat"><i class="fas fa-question"></i> 10 questions</span>
-                            <span class="stat"><i class="fas fa-chart-bar"></i> 62% mastery</span>
-                        </div>
-                        <button class="btn-topic">Practice Topic</button>
+                    <div>
+                        <h1 id="topics-title">Practise by topic</h1>
+                        <p>Up to 10 questions from one topic. Your mastery updates after each test.</p>
                     </div>
                 </div>
-            </div>
+                <h2 class="section-title">Grade 12 topics</h2>
+                <div class="topics-grid" id="topics-grade12"></div>
+                <h2 class="section-title">Revision from earlier grades</h2>
+                <div class="topics-grid" id="topics-revision"></div>
+            </section>
 
-            <!-- Progress Page -->
-
-<div id="progress-page" class="page">
-    <div class="page-header">
-        <h1>Your Progress Analytics</h1>
-        <p>Track your improvement and identify weak areas</p>
-    </div>
-    
-    <div class="stats-grid" style="margin-bottom: 30px;">
-        <div class="stat-card">
-            <i class="fas fa-chart-line"></i>
-            <h3>Best Score</h3>
-            <p class="stat-number" id="best-score">85%</p>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-bolt"></i>
-            <h3>Fastest Time</h3>
-            <p class="stat-number" id="fastest-time">22:15</p>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-fire"></i>
-            <h3>Current Streak</h3>
-            <p class="stat-number" id="current-streak">7 days</p>
-        </div>
-        <div class="stat-card">
-            <i class="fas fa-trophy"></i>
-            <h3>Rank</h3>
-            <p class="stat-number" id="user-rank">Top 15%</p>
-        </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 30px;">
-        <div class="category-card" style="height: 400px;">
-            <h3 style="color: white; margin-bottom: 20px;">
-                <i class="fas fa-chart-line"></i> Score Progress Over Time
-            </h3>
-            <div id="progress-chart" style="height: 300px;"></div>
-        </div>
-        
-        <div class="category-card" style="height: 400px;">
-            <h3 style="color: white; margin-bottom: 20px;">
-                <i class="fas fa-brain"></i> Topic Mastery
-            </h3>
-            <div id="topic-mastery" style="height: 300px;"></div>
-        </div>
-    </div>
-    
-    <div class="category-card">
-        <h3 style="color: white; margin-bottom: 20px;">
-            <i class="fas fa-history"></i> Recent Test History
-        </h3>
-        <div id="test-history">
-            <table style="width: 100%; color: rgba(255, 255, 255, 0.8);">
-                <thead>
-                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <th style="padding: 15px; text-align: left;">Test</th>
-                        <th style="padding: 15px; text-align: left;">Date</th>
-                        <th style="padding: 15px; text-align: left;">Score</th>
-                        <th style="padding: 15px; text-align: left;">Time</th>
-                        <th style="padding: 15px; text-align: left;">Weak Topic</th>
-                    </tr>
-                </thead>
-                <tbody id="history-table">
-                    <!-- Filled by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-            <!-- Paper Structure Page -->
-            <div id="papers-page" class="page">
+            <!-- Progress -->
+            <section id="progress-page" class="page" aria-labelledby="progress-title">
                 <div class="page-header">
-                    <h1>Paper Structure</h1>
-                    <p>Understanding DBE Life Sciences Exam Format</p>
+                    <div>
+                        <h1 id="progress-title">Your progress</h1>
+                        <p>Based on the tests you have completed.</p>
+                    </div>
                 </div>
-                <div class="category-card" style="margin-bottom: 25px;">
-                    <h3 style="color: white; margin-bottom: 15px;">Paper 1: Life Processes</h3>
-                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 15px;">
-                        <strong>Topics:</strong> DNA & Protein Synthesis, Genetics, Evolution<br>
-                        <strong>Duration:</strong> 2.5 hours<br>
-                        <strong>Marks:</strong> 150<br>
-                        <strong>Question Types:</strong> Multiple Choice, Terminology, Diagrams, Case Studies
-                    </p>
-                </div>
-                <div class="category-card">
-                    <h3 style="color: white; margin-bottom: 15px;">Paper 2: Life Systems</h3>
-                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 15px;">
-                        <strong>Topics:</strong> Human Reproduction, Nervous System, Homeostasis<br>
-                        <strong>Duration:</strong> 2.5 hours<br>
-                        <strong>Marks:</strong> 150<br>
-                        <strong>Question Types:</strong> Multiple Choice, Terminology, Diagrams, Case Studies
-                    </p>
-                </div>
-            </div>
 
-         <!-- Test Interface (Hidden by default) -->
-<div id="test-interface-page" class="page">
-    <div class="test-header">
-        <div class="test-info">
-            <h2 id="test-title">Past Paper</h2>
-            <p id="test-subtitle">DBE November 2023 Paper 1</p>
-        </div>
-        <div class="test-timer">
-            <i class="fas fa-clock"></i>
-            <span id="timer">30:00</span>
-        </div>
-        <div class="test-progress">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-            <span id="question-counter">Question 1/10</span>
-        </div>
+                <div class="stats-grid">
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-trophy"></i></span>
+                        <span class="stat-label">Best score</span>
+                        <strong class="stat-value" id="best-score">–</strong>
+                    </div>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-percent"></i></span>
+                        <span class="stat-label">Average score</span>
+                        <strong class="stat-value" id="progress-average">–</strong>
+                    </div>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-bullseye"></i></span>
+                        <span class="stat-label">Accuracy</span>
+                        <strong class="stat-value" id="accuracy">–</strong>
+                    </div>
+                    <div class="stat-card card">
+                        <span class="stat-icon"><i class="fas fa-fire"></i></span>
+                        <span class="stat-label">Day streak</span>
+                        <strong class="stat-value" id="current-streak">–</strong>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <h2 class="card-title">Scores over time</h2>
+                        <div class="chart-box" id="progress-chart"></div>
+                    </div>
+                    <div class="card chart-card">
+                        <h2 class="card-title">Topic mastery</h2>
+                        <div class="chart-box" id="topic-mastery"></div>
+                    </div>
+                </div>
+
+                <div class="card section-card">
+                    <h2 class="card-title">Test history</h2>
+                    <div class="table-wrap">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Test</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Score</th>
+                                    <th scope="col">Time</th>
+                                    <th scope="col">Weakest topic</th>
+                                    <th scope="col"><span class="sr-only">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exam guide -->
+            <section id="guide-page" class="page" aria-labelledby="guide-title">
+                <div class="page-header">
+                    <div>
+                        <h1 id="guide-title">Exam guide</h1>
+                        <p>How the DBE Life Sciences papers are structured.</p>
+                    </div>
+                </div>
+                <div class="guide-grid">
+                    <article class="card guide-card">
+                        <span class="badge badge-primary">Paper 1</span>
+                        <h2>Reproduction &amp; responding to the environment</h2>
+                        <dl>
+                            <div><dt>Topics</dt><dd>Meiosis, reproduction in vertebrates, human reproduction, the nervous system, the eye and ear, the endocrine system, homeostasis, plant responses</dd></div>
+                            <div><dt>Duration</dt><dd>2½ hours</dd></div>
+                            <div><dt>Marks</dt><dd>150</dd></div>
+                            <div><dt>Question types</dt><dd>Multiple choice, terminology, matching, diagrams, data and investigations, an essay</dd></div>
+                        </dl>
+                        <button type="button" class="btn btn-secondary" data-start="paper:practice-p1">Try Practice Paper 1</button>
+                    </article>
+                    <article class="card guide-card">
+                        <span class="badge badge-primary">Paper 2</span>
+                        <h2>Genetics &amp; evolution</h2>
+                        <dl>
+                            <div><dt>Topics</dt><dd>DNA: the code of life, meiosis, genetics and inheritance, evolution by natural selection, human evolution</dd></div>
+                            <div><dt>Duration</dt><dd>2½ hours</dd></div>
+                            <div><dt>Marks</dt><dd>150</dd></div>
+                            <div><dt>Question types</dt><dd>Multiple choice, terminology, matching, genetic crosses, data and investigations, an essay</dd></div>
+                        </dl>
+                        <button type="button" class="btn btn-secondary" data-start="paper:practice-p2">Try Practice Paper 2</button>
+                    </article>
+                </div>
+                <div class="card tips-card">
+                    <h2 class="card-title">Tips for test day</h2>
+                    <ul>
+                        <li>Read every option before choosing: distractors often differ by one word.</li>
+                        <li>Flag questions you're unsure of and come back to them at the end.</li>
+                        <li>Check the mark allocation: it tells you how much detail is expected.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Test -->
+            <section id="test-page" class="page" aria-labelledby="test-title">
+                <div class="test-bar">
+                    <div class="test-heading">
+                        <h1 id="test-title">Test</h1>
+                        <p id="test-subtitle"></p>
+                    </div>
+                    <div class="test-bar-actions">
+                        <div class="timer" id="timer-pill" role="timer" aria-live="off">
+                            <i class="far fa-clock"></i>
+                            <span id="timer">00:00</span>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="exit-test">Save &amp; exit</button>
+                    </div>
+                </div>
+                <div class="test-progress"><span id="progress-fill"></span></div>
+
+                <div class="test-layout">
+                    <div class="card question-card">
+                        <div class="question-meta">
+                            <span class="question-counter" id="question-counter">Question 1 of 10</span>
+                            <span class="badge" id="question-topic"></span>
+                            <span class="badge badge-primary" id="question-marks"></span>
+                        </div>
+                        <h2 class="question-text" id="question-text"></h2>
+
+                        <div class="options" id="options-container" role="radiogroup" aria-labelledby="question-text"></div>
+
+                        <div class="question-nav">
+                            <button type="button" class="btn btn-secondary" id="prev-question"><i class="fas fa-arrow-left"></i><span>Previous</span></button>
+                            <button type="button" class="btn btn-ghost flag-btn" id="flag-question"><i class="far fa-flag"></i><span>Flag</span></button>
+                            <button type="button" class="btn btn-primary" id="next-question"><span>Next</span><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                        <p class="kbd-hint">Tip: press <kbd>A</kbd>–<kbd>D</kbd> to answer, <kbd>←</kbd> <kbd>→</kbd> to move, <kbd>F</kbd> to flag.</p>
+                    </div>
+
+                    <aside class="card navigator">
+                        <h2 class="card-title">Questions</h2>
+                        <div class="navigator-grid" id="navigator"></div>
+                        <div class="navigator-legend">
+                            <span><i class="dot dot-answered"></i>Answered</span>
+                            <span><i class="dot dot-flagged"></i>Flagged</span>
+                            <span><i class="dot"></i>Not answered</span>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-block" id="submit-test">Submit test</button>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- Results -->
+            <section id="results-page" class="page" aria-labelledby="results-title">
+                <div id="results-content"></div>
+            </section>
+        </main>
     </div>
 
-    <div class="question-container">
-        <div class="question-header">
-            <div class="question-meta">
-                <span id="question-marks">[2 marks]</span>
-                <span id="question-year">2023 Nov P1</span>
-            </div>
-            <h2 id="question-text">Loading question...</h2>
-            <div id="question-diagram" class="diagram-container"></div>
-        </div>
-        
-        <div class="options-container" id="options-container">
-            <!-- Options loaded dynamically -->
-            <div class="option" style="opacity: 0.7;">
-                <span class="option-label">A</span>
-                <span class="option-text">Loading options...</span>
-            </div>
-            <div class="option" style="opacity: 0.7;">
-                <span class="option-label">B</span>
-                <span class="option-text">Loading options...</span>
-            </div>
-            <div class="option" style="opacity: 0.7;">
-                <span class="option-label">C</span>
-                <span class="option-text">Loading options...</span>
-            </div>
-            <div class="option" style="opacity: 0.7;">
-                <span class="option-label">D</span>
-                <span class="option-text">Loading options...</span>
-            </div>
-        </div>
-
-        <div class="test-navigation">
-            <button id="prev-question" class="btn-nav">
-                <i class="fas fa-arrow-left"></i> Previous
-            </button>
-            <button id="flag-question" class="btn-flag">
-                <i class="far fa-flag"></i> Flag
-            </button>
-            <button id="next-question" class="btn-nav">
-                Next <i class="fas fa-arrow-right"></i>
-            </button>
-            <button id="submit-test" class="btn-submit">
-                Submit Paper
-            </button>
-        </div>
-    </div>
-</div>
-        </div>
-    </div>
-
-   <script type="module" src="dashboard.js"></script>
+    <script type="module" src="dashboard.js"></script>
 </body>
 </html>

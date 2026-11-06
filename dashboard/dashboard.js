@@ -1,828 +1,920 @@
-// dashboard/dashboard.js - FINAL FIXED VERSION
-
-// === FIREBASE IMPORTS ===
-import { initializeProgressChart, initializeTopicChart } from './progress.js';
-import { auth, db } from '../auth/firebase-config.js';
-import { 
-    onAuthStateChanged, 
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+// dashboard/dashboard.js - pages, tests and results
+import { auth } from '../auth/firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import {
-    doc,
-    getDoc,
-    setDoc,      
-    updateDoc,
-    addDoc,
-    collection,
-    serverTimestamp,
-    query,
-    where,
-    orderBy,
-    limit,
-    getDocs
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
-// === QUESTION DATABASE IMPORTS ===
-import { 
-    QUESTION_DATABASE,
+    PAPERS,
+    TOPICS,
+    topicName,
+    getPaper,
+    getPaperQuestions,
     getQuestionsByTopic,
     getMixedQuestions,
-    getPaperQuestions
+    getQuestionByKey,
+    countQuestionsByTopic,
+    shuffle,
+    timeLimitFor
 } from './questions.js';
+import {
+    loadProfile,
+    loadRecentResults,
+    saveTestResult,
+    averageScore,
+    weakestTopic,
+    dayStreak
+} from './data.js';
+import { renderScoreChart, renderTopicChart } from './progress.js';
+import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle } from '../shared/ui.js';
 
-// Debug logging
-console.log('Dashboard.js loaded');
-console.log('Available papers:', Object.keys(QUESTION_DATABASE).filter(k => k.includes('202') || k.includes('gauteng') || k.includes('wc')));
+const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'guide'];
+const TOPIC_COUNTS = countQuestionsByTopic();
 
-// Check authentication
-onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = '../index.html';
-    } else {
-        loadUserData(user);
-        setupEventListeners();
-        console.log('Dashboard loaded for:', user.email);
+let user = null;
+let profile = null;
+let results = [];
+let activeTest = null;   // the test currently on screen
+let testTimer = null;
+let lastResult = null;   // shown on the results page
+
+// === Start-up ===
+
+onAuthStateChanged(auth, (signedInUser) => {
+    if (!signedInUser) {
+        window.location.replace('../index.html');
+        return;
     }
+    if (user) return;
+    user = signedInUser;
+    init();
 });
 
-// Load user data
+function init() {
+    const name = user.displayName || '';
+    document.getElementById('user-name').textContent = name || 'Learner';
+    document.getElementById('user-email').textContent = user.email || '';
+    document.getElementById('user-initial').textContent = (name || user.email || 'L').charAt(0).toUpperCase();
+    document.getElementById('greeting-name').textContent = firstName();
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-ZA', {
+        weekday: 'long', day: 'numeric', month: 'long'
+    });
 
-async function loadUserData(user) {
-    try {
-        document.getElementById('user-name').textContent = user.displayName || 'Student';
-        document.getElementById('user-email').textContent = user.email;
-        document.getElementById('greeting-name').textContent = user.displayName || 'Learner';
-        
-        // Load real stats from Firestore
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-            
-            // Update all stats
-            document.getElementById('papers-attempted').textContent = data.papersAttempted || 0;
-            document.getElementById('average-score').textContent = (data.averageScore || 0) + '%';
-            document.getElementById('questions-mastered').textContent = data.questionsMastered || 0;
-            document.getElementById('weakest-topic').textContent = data.weakestTopic || 'None';
-            
-            // Calculate and update additional stats
-            await updateAdditionalStats(user.uid);
-            
-        } else {
-            // First-time user
-            await setDoc(userRef, {
-                name: user.displayName || 'Student',
-                email: user.email,
-                papersAttempted: 0,
-                averageScore: 0,
-                questionsMastered: 0,
-                weakestTopic: 'None',
-                createdAt: serverTimestamp(),
-                lastActive: serverTimestamp()
-            });
-        }
-        
-    } catch (error) {
-        console.log('Error loading user data:', error);
-    }
+    setupEventListeners();
+    renderQuickStart();
+    renderPapers();
+    renderTopics();
+    renderResumeBanner();
+    route();
+    refreshData();
 }
 
-async function updateAdditionalStats(userId) {
-    try {
-        // Fetch recent test results for additional stats
-        const testResultsRef = collection(db, 'testResults');
-        const q = query(
-            testResultsRef, 
-            where('userId', '==', userId),
-            orderBy('timestamp', 'desc'),
-            limit(50)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        let bestScore = 0;
-        let fastestTime = Infinity;
-        let totalTests = 0;
-        let totalScore = 0;
-        
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            totalTests++;
-            totalScore += data.score || 0;
-            
-            if (data.score > bestScore) {
-                bestScore = data.score;
-            }
-            
-            if (data.timeSpent && data.timeSpent < fastestTime) {
-                fastestTime = data.timeSpent;
-            }
-        });
-        
-        // Update UI if elements exist
-        const bestScoreEl = document.getElementById('best-score');
-        const fastestTimeEl = document.getElementById('fastest-time');
-        const currentStreakEl = document.getElementById('current-streak');
-        const userRankEl = document.getElementById('user-rank');
-        
-        if (bestScoreEl) bestScoreEl.textContent = bestScore + '%';
-        if (fastestTimeEl) {
-            const minutes = Math.floor(fastestTime / 60);
-            const seconds = fastestTime % 60;
-            fastestTimeEl.textContent = fastestTime === Infinity ? 'N/A' : 
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        // Calculate rank (simplified)
-        if (userRankEl) {
-            const avgScore = totalTests > 0 ? Math.round(totalScore / totalTests) : 0;
-            let rank = 'Beginner';
-            if (avgScore >= 80) rank = 'Top 10%';
-            else if (avgScore >= 70) rank = 'Top 25%';
-            else if (avgScore >= 60) rank = 'Top 50%';
-            else if (avgScore >= 50) rank = 'Top 75%';
-            userRankEl.textContent = rank;
-        }
-        
-        // Streak calculation (simplified - in real app, track daily logins)
-        if (currentStreakEl) {
-            currentStreakEl.textContent = totalTests > 0 ? Math.min(totalTests, 7) + ' days' : '0 days';
-        }
-        
-    } catch (error) {
-        console.error('Error updating additional stats:', error);
-    }
+function firstName() {
+    const name = user?.displayName || profile?.name || '';
+    return name.trim().split(/\s+/)[0] || 'there';
 }
 
-// Setup all event listeners
+async function refreshData() {
+    try {
+        profile = await loadProfile(user);
+    } catch (error) {
+        console.error('Could not load profile:', error);
+        profile = profile || {};
+    }
+
+    try {
+        results = await loadRecentResults(user.uid);
+    } catch (error) {
+        // Usually a missing Firestore index; see firestore.indexes.json
+        console.error('Could not load test results:', error);
+    }
+
+    document.getElementById('greeting-name').textContent = firstName();
+    renderHomeStats();
+    renderFocusCard();
+    renderRecentTests();
+    renderTopics();
+    renderProgress();
+}
+
 function setupEventListeners() {
-    console.log('Setting up event listeners...');
-    
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = item.getAttribute('data-page');
-            console.log('Switching to page:', page);
-            switchPage(page);
-            
-            // Update active state
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-        });
+    window.addEventListener('hashchange', route);
+
+    initThemeToggle(document.querySelectorAll('.theme-toggle'), () => {
+        if (currentPage() === 'progress') renderCharts();
     });
 
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = '../index.html';
-        });
+    document.querySelectorAll('.logout-btn').forEach(btn => btn.addEventListener('click', async () => {
+        pauseTest();
+        await signOut(auth);
+        window.location.replace('../index.html');
+    }));
+
+    // Any button with data-start launches a test
+    document.addEventListener('click', (e) => {
+        const starter = e.target.closest('[data-start]');
+        if (!starter || starter.disabled) return;
+        const [kind, value] = starter.dataset.start.split(':');
+        if (kind === 'paper') startPaperTest(value);
+        if (kind === 'topic') startTopicTest(value);
+        if (kind === 'mixed') startMixedTest();
     });
 
-    // Quick action buttons
-    document.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const testType = this.getAttribute('data-test');
-            console.log('Quick action clicked:', testType);
-            startTest(testType);
-        });
+    document.getElementById('prev-question').addEventListener('click', () => goToQuestion(activeTest.index - 1));
+    document.getElementById('next-question').addEventListener('click', () => {
+        if (activeTest.index < activeTest.questions.length - 1) {
+            goToQuestion(activeTest.index + 1);
+        } else {
+            submitTest();
+        }
+    });
+    document.getElementById('flag-question').addEventListener('click', toggleFlag);
+    document.getElementById('submit-test').addEventListener('click', () => submitTest());
+    document.getElementById('exit-test').addEventListener('click', () => {
+        pauseTest();
+        showToast('Test saved. You can resume it from the Home page.');
+        navigate('home');
     });
 
-    // Paper buttons
-    document.querySelectorAll('.btn-paper').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const paper = this.getAttribute('data-paper');
-            console.log('Paper button clicked:', paper);
-            startTest(paper);
-        });
-    });
-
-    // Topic buttons
-    document.querySelectorAll('.btn-topic').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const topicCard = this.closest('.topic-card');
-            const topic = topicCard.getAttribute('data-topic');
-            console.log('Topic button clicked:', topic);
-            startTopicTest(topic);
-        });
-    });
-
-    // Test navigation (check if elements exist first)
-    const prevBtn = document.getElementById('prev-question');
-    const nextBtn = document.getElementById('next-question');
-    const flagBtn = document.getElementById('flag-question');
-    const submitBtn = document.getElementById('submit-test');
-    
-    if (prevBtn) prevBtn.addEventListener('click', previousQuestion);
-    if (nextBtn) nextBtn.addEventListener('click', nextQuestion);
-    if (flagBtn) flagBtn.addEventListener('click', flagQuestion);
-    if (submitBtn) submitBtn.addEventListener('click', submitTest);
-    
-    console.log('Event listeners setup complete');
+    document.addEventListener('keydown', handleTestKeys);
 }
 
-// Page switching - FIXED VERSION
-function switchPage(page) {
-    console.log('Switching to page:', page);
-    
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-    });
-    
-    const pageElement = document.getElementById(page + '-page');
-    if (pageElement) {
-        pageElement.classList.add('active');
-        
-        // Initialize charts when progress page is opened
-        if (page === 'progress') {
-            setTimeout(() => {
-                initializeProgressChart();
-                initializeTopicChart();
-                loadTestHistory();
-            }, 100);
-        }
+// === Routing (location.hash) ===
+
+function currentPage() {
+    return document.querySelector('.page.active')?.id.replace('-page', '');
+}
+
+function navigate(page) {
+    if (location.hash === `#${page}`) {
+        route();
+    } else {
+        location.hash = page;
     }
 }
 
-// Add function to load test history
-async function loadTestHistory() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    try {
-        const historyTable = document.getElementById('history-table');
-        if (!historyTable) return;
-        
-        // Sample data - replace with Firebase fetch
-        const historyData = [
-            { test: '2023 Nov P1', date: '2024-01-15', score: '85%', time: '28:30', weak: 'Genetics' },
-            { test: 'Mixed Questions', date: '2024-01-14', score: '78%', time: '09:45', weak: 'DNA' },
-            { test: 'Topic: Evolution', date: '2024-01-13', score: '72%', time: '12:20', weak: 'Evolution' },
-            { test: '2022 Nov P1', date: '2024-01-12', score: '80%', time: '29:15', weak: 'Nervous' },
-            { test: 'Topic: Reproduction', date: '2024-01-11', score: '68%', time: '11:40', weak: 'Reproduction' }
-        ];
-        
-        historyTable.innerHTML = historyData.map(item => `
-            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                <td style="padding: 15px;">${item.test}</td>
-                <td style="padding: 15px;">${item.date}</td>
-                <td style="padding: 15px; color: #2ed573; font-weight: bold;">${item.score}</td>
-                <td style="padding: 15px;">${item.time}</td>
-                <td style="padding: 15px;">${item.weak}</td>
+function route() {
+    const page = location.hash.replace('#', '') || 'home';
+
+    if (page === 'test') {
+        if (activeTest || resumeSavedTest()) {
+            showPage('test');
+            return;
+        }
+        history.replaceState(null, '', '#home');
+        showPage('home');
+        return;
+    }
+
+    if (page === 'results') {
+        if (lastResult) {
+            showPage('results');
+            return;
+        }
+        history.replaceState(null, '', '#home');
+        showPage('home');
+        return;
+    }
+
+    // Leaving a running test keeps it saved so it can be resumed
+    if (activeTest) {
+        pauseTest();
+        showToast('Test saved. You can resume it from the Home page.');
+    }
+
+    showPage(NAV_PAGES.includes(page) ? page : 'home');
+}
+
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `${page}-page`));
+    document.querySelectorAll('.nav-item').forEach(item => {
+        const active = item.dataset.page === page;
+        item.classList.toggle('active', active);
+        if (active) item.setAttribute('aria-current', 'page');
+        else item.removeAttribute('aria-current');
+    });
+    document.body.classList.toggle('test-mode', page === 'test');
+    window.scrollTo(0, 0);
+
+    if (page === 'home') renderResumeBanner();
+    if (page === 'progress') renderCharts();
+}
+
+// === Home page ===
+
+function renderHomeStats() {
+    const avg = averageScore(profile);
+    const answered = profile?.questionsAnswered || 0;
+    const correct = profile?.questionsCorrect || 0;
+
+    document.getElementById('stat-tests').textContent = profile?.papersAttempted || 0;
+    document.getElementById('stat-average').textContent = avg === null ? '–' : `${avg}%`;
+    document.getElementById('stat-correct').innerHTML = answered
+        ? `${correct}<small> / ${answered}</small>`
+        : '0';
+    const streak = dayStreak(results);
+    document.getElementById('stat-streak').textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+}
+
+function renderFocusCard() {
+    const card = document.getElementById('focus-card');
+    const weak = weakestTopic(profile?.topics);
+
+    if (weak && TOPIC_COUNTS[weak.topic]) {
+        const pct = Math.round(weak.pct * 100);
+        card.innerHTML = `
+            <span class="eyebrow"><i class="fas fa-crosshairs"></i> Your focus area</span>
+            <h2>${escapeHtml(topicName(weak.topic))}</h2>
+            <p>You've answered <strong>${pct}%</strong> of ${weak.total} questions on this topic correctly. A short practice set will help.</p>
+            <div class="meter ${meterClass(pct)}"><span style="width: ${pct}%"></span></div>
+            <button type="button" class="btn btn-primary" data-start="topic:${weak.topic}">
+                Practise ${escapeHtml(topicName(weak.topic))} <i class="fas fa-arrow-right"></i>
+            </button>
+        `;
+        return;
+    }
+
+    const isNew = !profile?.papersAttempted;
+    card.innerHTML = `
+        <span class="eyebrow"><i class="fas fa-seedling"></i> ${isNew ? 'Get started' : 'Keep going'}</span>
+        <h2>${isNew ? 'Take your first test' : 'Find your weak spots'}</h2>
+        <p>${isNew
+            ? 'A 10-question mixed test is the quickest way to see where you stand across the syllabus.'
+            : 'Answer a few more questions and we\'ll show you which topic needs the most attention.'}</p>
+        <button type="button" class="btn btn-primary" data-start="mixed">
+            Start a mixed test <i class="fas fa-arrow-right"></i>
+        </button>
+    `;
+}
+
+function renderQuickStart() {
+    const available = PAPERS.filter(p => p.questionCount > 0);
+    const rows = [
+        { start: 'mixed', icon: 'shuffle', title: 'Mixed practice', meta: `10 random questions · ${timeLimitFor(10) / 60} min` },
+        ...available.map(p => ({
+            start: `paper:${p.key}`,
+            icon: 'file-lines',
+            title: p.title,
+            meta: `${p.questionCount} questions · ${timeLimitFor(p.questionCount) / 60} min`
+        }))
+    ];
+
+    document.getElementById('quick-list').innerHTML = rows.map(row => `
+        <button type="button" class="quick-row" data-start="${row.start}">
+            <span class="quick-icon"><i class="fas fa-${row.icon}"></i></span>
+            <span class="quick-text">
+                <strong>${escapeHtml(row.title)}</strong>
+                <small>${escapeHtml(row.meta)}</small>
+            </span>
+            <i class="fas fa-chevron-right quick-chevron"></i>
+        </button>
+    `).join('');
+}
+
+function renderRecentTests() {
+    const container = document.getElementById('recent-tests');
+    const recent = results.slice(0, 4);
+
+    if (recent.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state compact">
+                <i class="far fa-clipboard"></i>
+                <p>No tests yet. Your finished tests will show up here.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `<ul class="result-list">${recent.map(r => `
+        <li class="result-row">
+            <div class="result-info">
+                <strong>${escapeHtml(resultTitle(r))}</strong>
+                <small>${formatDate(r.date)} · ${formatDuration(r.timeSpent)}</small>
+            </div>
+            <span class="badge ${scoreBadge(r.score)}">${r.score ?? 0}%</span>
+            ${reviewLink(r)}
+        </li>
+    `).join('')}</ul>`;
+}
+
+function renderResumeBanner() {
+    const banner = document.getElementById('resume-banner');
+    const saved = readSavedTest();
+    if (!saved || activeTest) {
+        banner.innerHTML = '';
+        return;
+    }
+
+    const answered = saved.answers.filter(a => a !== null).length;
+    banner.innerHTML = `
+        <div class="resume-banner card">
+            <span class="resume-icon"><i class="fas fa-pause"></i></span>
+            <div class="resume-text">
+                <strong>Unfinished test: ${escapeHtml(saved.title)}</strong>
+                <small>${answered} of ${saved.questionKeys.length} answered · ${formatDuration(saved.timeRemaining)} left</small>
+            </div>
+            <div class="resume-actions">
+                <button type="button" class="btn btn-ghost" id="discard-test">Discard</button>
+                <button type="button" class="btn btn-primary" id="resume-test">Resume</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('resume-test').addEventListener('click', () => {
+        if (resumeSavedTest()) navigate('test');
+    });
+    document.getElementById('discard-test').addEventListener('click', async () => {
+        const ok = await showDialog({
+            title: 'Discard this test?',
+            body: 'Your answers for this test will be deleted and it won\'t count towards your progress.',
+            confirmText: 'Discard',
+            cancelText: 'Keep it',
+            danger: true
+        });
+        if (ok) {
+            clearSavedTest();
+            renderResumeBanner();
+        }
+    });
+}
+
+// === Papers & topics pages ===
+
+function renderPapers() {
+    const groups = [...new Set(PAPERS.map(p => p.group))];
+    document.getElementById('papers-list').innerHTML = groups.map(group => `
+        <h2 class="section-title">${escapeHtml(group)}</h2>
+        <div class="papers-grid">
+            ${PAPERS.filter(p => p.group === group).map(p => `
+                <article class="card paper-card">
+                    <span class="paper-icon"><i class="far fa-file-lines"></i></span>
+                    <div class="paper-body">
+                        <h3>${escapeHtml(p.title)}</h3>
+                        <p>${escapeHtml(p.description)}</p>
+                        <small>${p.questionCount} questions · ${timeLimitFor(p.questionCount) / 60} minutes</small>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-start="paper:${p.key}">Start</button>
+                </article>
+            `).join('')}
+        </div>
+    `).join('');
+}
+
+function renderTopics() {
+    const card = ([key, topic]) => {
+        const count = TOPIC_COUNTS[key] || 0;
+        const stats = profile?.topics?.[key];
+        const pct = stats?.total ? Math.round((stats.correct / stats.total) * 100) : null;
+        return `
+            <article class="card topic-card">
+                <div class="topic-head">
+                    <span class="topic-icon"><i class="fas fa-${topic.icon}"></i></span>
+                    <div>
+                        <h3>${escapeHtml(topic.name)}</h3>
+                        <small>${count} ${count === 1 ? 'question' : 'questions'}</small>
+                    </div>
+                </div>
+                <p>${escapeHtml(topic.description)}</p>
+                <div class="topic-mastery">
+                    <div class="topic-mastery-label">
+                        <span>Mastery</span>
+                        <strong>${pct === null ? 'Not tried yet' : `${pct}%`}</strong>
+                    </div>
+                    <div class="meter ${pct === null ? '' : meterClass(pct)}"><span style="width: ${pct || 0}%"></span></div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-block" data-start="topic:${key}">Practise</button>
+            </article>
+        `;
+    };
+
+    const withQuestions = Object.entries(TOPICS).filter(([key]) => TOPIC_COUNTS[key]);
+    document.getElementById('topics-grade12').innerHTML = withQuestions.filter(([, t]) => t.grade12).map(card).join('');
+    document.getElementById('topics-revision').innerHTML = withQuestions.filter(([, t]) => !t.grade12).map(card).join('');
+}
+
+// === Progress page ===
+
+function renderProgress() {
+    const best = results.length ? Math.max(...results.map(r => r.score || 0)) : null;
+    const avg = averageScore(profile);
+    const answered = profile?.questionsAnswered || 0;
+    const streak = dayStreak(results);
+
+    document.getElementById('best-score').textContent = best === null ? '–' : `${best}%`;
+    document.getElementById('progress-average').textContent = avg === null ? '–' : `${avg}%`;
+    document.getElementById('accuracy').textContent = answered
+        ? `${Math.round(((profile.questionsCorrect || 0) / answered) * 100)}%`
+        : '–';
+    document.getElementById('current-streak').textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+
+    const table = document.getElementById('history-table');
+    if (results.length === 0) {
+        table.innerHTML = `
+            <tr><td colspan="6">
+                <div class="empty-state compact">
+                    <i class="far fa-clipboard"></i>
+                    <p>No test history yet. Finish a test to start tracking.</p>
+                </div>
+            </td></tr>
+        `;
+    } else {
+        table.innerHTML = results.map(r => `
+            <tr>
+                <td data-label="Test"><strong>${escapeHtml(resultTitle(r))}</strong></td>
+                <td data-label="Date">${formatDate(r.date)}</td>
+                <td data-label="Score"><span class="badge ${scoreBadge(r.score)}">${r.score ?? 0}%</span></td>
+                <td data-label="Time">${formatDuration(r.timeSpent)}</td>
+                <td data-label="Weakest">${r.weakestTopic && r.weakestTopic !== 'None' ? escapeHtml(topicName(r.weakestTopic)) : '–'}</td>
+                <td class="cell-action">${reviewLink(r)}</td>
             </tr>
         `).join('');
-        
-    } catch (error) {
-        console.error('Error loading history:', error);
     }
+
+    if (currentPage() === 'progress') renderCharts();
 }
 
-// Test state
-let currentTest = null;
-let currentQuestionIndex = 0;
-let userAnswers = [];
-let testTimer = null;
-let timeRemaining = 0;
-let flaggedQuestions = new Set();
+function renderCharts() {
+    renderScoreChart(document.getElementById('progress-chart'), results);
+    renderTopicChart(document.getElementById('topic-mastery'), profile?.topics);
+}
 
-// Start a past paper test
-function startTest(paperType) {
-    console.log('Starting test for paper:', paperType);
-    
-    let questions;
-    
-    // Handle mixed questions
-    if (paperType === 'mixed') {
-        questions = getMixedQuestions(10);
-        console.log('Mixed questions loaded:', questions.length);
-    } else {
-        // Get questions for specific paper
-        questions = getPaperQuestions(paperType);
-        console.log('Paper questions loaded for', paperType + ':', questions ? questions.length : 'none');
-    }
-    
-    // Validate questions
-    if (!questions || questions.length === 0) {
-        alert(`No questions available for ${paperType}. Please try another paper.`);
-        console.error('No questions found for:', paperType);
+// === Starting tests ===
+
+async function startPaperTest(paperKey) {
+    const paper = getPaper(paperKey);
+    const questions = getPaperQuestions(paperKey);
+    if (!paper || questions.length === 0) {
+        showToast('This paper doesn\'t have any questions yet.');
         return;
     }
-    
-    // Initialize test
-    currentTest = {
-        type: paperType,
-        questions: questions,
-        startTime: new Date(),
-        timeLimit: paperType === 'mixed' ? 600 : 1800 // 10 min for mixed, 30 min for papers
-    };
-    
-    currentQuestionIndex = 0;
-    userAnswers = new Array(questions.length).fill(null);
-    flaggedQuestions.clear();
-    timeRemaining = currentTest.timeLimit;
-    
-    // Update UI
-    document.getElementById('test-title').textContent = getPaperTitle(paperType);
-    document.getElementById('test-subtitle').textContent = getPaperSubtitle(paperType, questions.length);
-    
-    // Reset timer color
-    const timerElement = document.getElementById('timer');
-    if (timerElement) timerElement.style.color = '';
-    
-    // Switch to test interface - FIXED: Use 'test-interface' not 'test-interface-page'
-    switchPage('test-interface');
-    
-    // Start timer
-    startTimer();
-    
-    // Load first question
-    loadQuestion(currentQuestionIndex);
+    await beginTest({ type: paperKey, title: paper.title, questions });
 }
 
-// Start topic test
-function startTopicTest(topic) {
-    console.log('Starting topic test for:', topic);
-    
-    // Get questions from the imported database
-    const questions = getQuestionsByTopic(topic);
-    console.log('Topic questions loaded:', questions.length);
-    
+async function startTopicTest(topic) {
+    const questions = shuffle(getQuestionsByTopic(topic)).slice(0, 10);
     if (questions.length === 0) {
-        alert(`No questions available for ${topic}. Try another topic.`);
+        showToast('There are no questions for this topic yet.');
         return;
     }
-    
-    // Take first 10 questions or all if less
-    const testQuestions = questions.slice(0, Math.min(10, questions.length));
-    
-    currentTest = {
-        type: 'topic-' + topic,
-        questions: testQuestions,
-        startTime: new Date(),
-        timeLimit: 900 // 15 minutes
-    };
-    
-    currentQuestionIndex = 0;
-    userAnswers = new Array(testQuestions.length).fill(null);
-    flaggedQuestions.clear();
-    timeRemaining = currentTest.timeLimit;
-    
-    document.getElementById('test-title').textContent = topic.charAt(0).toUpperCase() + topic.slice(1) + ' Practice';
-    document.getElementById('test-subtitle').textContent = `${testQuestions.length} questions • 15 minutes`;
-    
-    // Reset timer color
-    const timerElement = document.getElementById('timer');
-    if (timerElement) timerElement.style.color = '';
-    
-    switchPage('test-interface');
-    startTimer();
-    loadQuestion(currentQuestionIndex);
+    await beginTest({ type: `topic-${topic}`, title: `${topicName(topic)} practice`, questions });
 }
 
-// Get paper title
-function getPaperTitle(paperType) {
-    const titles = {
-        '2023-nov-1': '2023 November Paper 1',
-        '2023-nov-2': '2023 November Paper 2',
-        '2022-nov-1': '2022 November Paper 1',
-        '2022-nov-2': '2022 November Paper 2',
-        '2021-nov-1': '2021 November Paper 1',
-        '2021-nov-2': '2021 November Paper 2',
-        'gauteng-2023': '2023 Gauteng Trial',
-        'wc-2023': '2023 Western Cape Trial',
-        'mixed': 'Mixed Questions Test'
-    };
-    return titles[paperType] || paperType;
+async function startMixedTest() {
+    await beginTest({ type: 'mixed', title: 'Mixed practice', questions: getMixedQuestions(10) });
 }
 
-function getPaperSubtitle(paperType, questionCount) {
-    if (paperType === 'mixed') {
-        return `${questionCount} mixed questions • 10 minutes`;
+async function beginTest({ type, title, questions }) {
+    const saved = readSavedTest();
+    if (saved) {
+        const ok = await showDialog({
+            title: 'Start a new test?',
+            body: `You have an unfinished test (${saved.title}). Starting a new one will discard it.`,
+            confirmText: 'Start new test',
+            cancelText: 'Cancel'
+        });
+        if (!ok) return;
     }
-    return `${questionCount} questions • 30 minutes`;
+
+    const timeLimit = timeLimitFor(questions.length);
+    activeTest = {
+        type,
+        title,
+        questions,
+        // Options are shown in a random order; answers are always stored as the original option index
+        optionOrders: questions.map(q => shuffle(q.options.map((_, i) => i))),
+        answers: new Array(questions.length).fill(null),
+        flagged: new Set(),
+        index: 0,
+        timeLimit,
+        timeRemaining: timeLimit
+    };
+    saveActiveTest();
+    renderTestShell();
+    navigate('test');
+    startTimer();
 }
 
-// Timer function
-function startTimer() {
-    if (testTimer) clearInterval(testTimer);
-    
-    // Update timer immediately
+// === Saving an unfinished test (localStorage) ===
+
+function storageKey() {
+    return `powerprep.activeTest.${user.uid}`;
+}
+
+function saveActiveTest() {
+    if (!activeTest) return;
+    try {
+        localStorage.setItem(storageKey(), JSON.stringify({
+            type: activeTest.type,
+            title: activeTest.title,
+            questionKeys: activeTest.questions.map(q => q.key),
+            optionOrders: activeTest.optionOrders,
+            answers: activeTest.answers,
+            flagged: [...activeTest.flagged],
+            index: activeTest.index,
+            timeLimit: activeTest.timeLimit,
+            timeRemaining: activeTest.timeRemaining
+        }));
+    } catch (e) { /* storage unavailable: the test still works, it just can't be resumed */ }
+}
+
+function readSavedTest() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(storageKey()));
+        if (saved?.questionKeys?.length && Array.isArray(saved.answers)) return saved;
+    } catch (e) { /* ignore broken data */ }
+    return null;
+}
+
+function clearSavedTest() {
+    try { localStorage.removeItem(storageKey()); } catch (e) { /* ignore */ }
+}
+
+function resumeSavedTest() {
+    const saved = readSavedTest();
+    if (!saved) return false;
+
+    const questions = saved.questionKeys.map(getQuestionByKey);
+    if (questions.some(q => !q)) {
+        // The question bank changed since this test was saved
+        clearSavedTest();
+        showToast('Your unfinished test is no longer available.');
+        return false;
+    }
+
+    activeTest = {
+        type: saved.type,
+        title: saved.title,
+        questions,
+        optionOrders: questions.map((q, i) => {
+            const order = saved.optionOrders?.[i];
+            return order?.length === q.options.length ? order : q.options.map((_, j) => j);
+        }),
+        answers: saved.answers,
+        flagged: new Set(saved.flagged || []),
+        index: Math.min(saved.index || 0, questions.length - 1),
+        timeLimit: saved.timeLimit,
+        timeRemaining: saved.timeRemaining
+    };
+    renderTestShell();
+    startTimer();
+    return true;
+}
+
+// Stops the clock and keeps the test saved for later
+function pauseTest() {
+    if (!activeTest) return;
+    stopTimer();
+    saveActiveTest();
+    activeTest = null;
+}
+
+// === Test screen ===
+
+function renderTestShell() {
+    document.getElementById('test-title').textContent = activeTest.title;
+    document.getElementById('test-subtitle').textContent =
+        `${activeTest.questions.length} questions · ${Math.round(activeTest.timeLimit / 60)} minutes`;
+    renderQuestion();
     updateTimerDisplay();
-    
+}
+
+function renderQuestion() {
+    const { questions, answers, index, flagged } = activeTest;
+    const question = questions[index];
+
+    document.getElementById('question-counter').textContent = `Question ${index + 1} of ${questions.length}`;
+    document.getElementById('question-topic').textContent = topicName(question.topic);
+    document.getElementById('question-marks').textContent = `${question.marks || 1} ${question.marks === 1 ? 'mark' : 'marks'}`;
+    document.getElementById('question-text').textContent = question.question;
+    document.getElementById('progress-fill').style.width =
+        `${(answers.filter(a => a !== null).length / questions.length) * 100}%`;
+
+    const options = document.getElementById('options-container');
+    options.innerHTML = '';
+    activeTest.optionOrders[index].forEach((original, position) => {
+        const selected = answers[index] === original;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `option${selected ? ' selected' : ''}`;
+        button.setAttribute('role', 'radio');
+        button.setAttribute('aria-checked', String(selected));
+        button.innerHTML = `<span class="option-label">${String.fromCharCode(65 + position)}</span><span class="option-text"></span>`;
+        button.querySelector('.option-text').textContent = question.options[original];
+        button.addEventListener('click', () => selectAnswer(original));
+        options.appendChild(button);
+    });
+
+    const flagBtn = document.getElementById('flag-question');
+    const isFlagged = flagged.has(index);
+    flagBtn.classList.toggle('is-flagged', isFlagged);
+    flagBtn.setAttribute('aria-pressed', String(isFlagged));
+    flagBtn.innerHTML = `<i class="${isFlagged ? 'fas' : 'far'} fa-flag"></i><span>${isFlagged ? 'Flagged' : 'Flag'}</span>`;
+
+    document.getElementById('prev-question').disabled = index === 0;
+    const isLast = index === questions.length - 1;
+    document.getElementById('next-question').innerHTML = isLast
+        ? '<span>Finish</span><i class="fas fa-check"></i>'
+        : '<span>Next</span><i class="fas fa-arrow-right"></i>';
+
+    renderNavigator();
+}
+
+function renderNavigator() {
+    const { questions, answers, index, flagged } = activeTest;
+    const nav = document.getElementById('navigator');
+    nav.innerHTML = questions.map((_, i) => {
+        const classes = ['nav-q'];
+        if (answers[i] !== null) classes.push('is-answered');
+        if (flagged.has(i)) classes.push('is-flagged');
+        if (i === index) classes.push('is-current');
+        const state = [answers[i] !== null ? 'answered' : 'not answered', flagged.has(i) ? 'flagged' : ''].filter(Boolean).join(', ');
+        return `<button type="button" class="${classes.join(' ')}" data-q="${i}" aria-label="Question ${i + 1}, ${state}"${i === index ? ' aria-current="step"' : ''}>${i + 1}</button>`;
+    }).join('');
+    nav.querySelectorAll('[data-q]').forEach(btn => btn.addEventListener('click', () => goToQuestion(Number(btn.dataset.q))));
+}
+
+function selectAnswer(optionIndex) {
+    activeTest.answers[activeTest.index] = optionIndex;
+    saveActiveTest();
+    renderQuestion();
+}
+
+function goToQuestion(index) {
+    if (!activeTest || index < 0 || index >= activeTest.questions.length) return;
+    activeTest.index = index;
+    saveActiveTest();
+    renderQuestion();
+    document.getElementById('question-text').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function toggleFlag() {
+    const { flagged, index } = activeTest;
+    if (flagged.has(index)) flagged.delete(index);
+    else flagged.add(index);
+    saveActiveTest();
+    renderQuestion();
+}
+
+function handleTestKeys(e) {
+    if (!activeTest || currentPage() !== 'test') return;
+    if (document.querySelector('.dialog-backdrop')) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest('input, textarea')) return;
+
+    const key = e.key.toLowerCase();
+    const optionCount = activeTest.questions[activeTest.index].options.length;
+    const letter = 'abcd'.indexOf(key);
+    const digit = '1234'.indexOf(key);
+
+    const order = activeTest.optionOrders[activeTest.index];
+    if (letter !== -1 && letter < optionCount) selectAnswer(order[letter]);
+    else if (digit !== -1 && digit < optionCount) selectAnswer(order[digit]);
+    else if (e.key === 'ArrowRight') goToQuestion(activeTest.index + 1);
+    else if (e.key === 'ArrowLeft') goToQuestion(activeTest.index - 1);
+    else if (key === 'f') toggleFlag();
+    else return;
+    e.preventDefault();
+}
+
+// === Timer ===
+
+function startTimer() {
+    stopTimer();
+    updateTimerDisplay();
     testTimer = setInterval(() => {
-        timeRemaining--;
+        activeTest.timeRemaining--;
         updateTimerDisplay();
-        
-        if (timeRemaining <= 0) {
-            clearInterval(testTimer);
-            submitTest();
+        if (activeTest.timeRemaining % 5 === 0) saveActiveTest();
+        if (activeTest.timeRemaining <= 0) {
+            stopTimer();
+            submitTest({ timeUp: true });
         }
     }, 1000);
 }
 
+function stopTimer() {
+    clearInterval(testTimer);
+    testTimer = null;
+}
+
 function updateTimerDisplay() {
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    const timerElement = document.getElementById('timer');
-    
-    if (timerElement) {
-        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeRemaining < 300) { // Less than 5 minutes
-            timerElement.style.color = '#ff4757';
-        }
-    }
+    if (!activeTest) return;
+    const remaining = Math.max(0, activeTest.timeRemaining);
+    document.getElementById('timer').textContent = formatDuration(remaining);
+    const pill = document.getElementById('timer-pill');
+    pill.classList.toggle('is-low', remaining <= Math.min(120, activeTest.timeLimit * 0.2));
 }
 
-// Load question
-function loadQuestion(index) {
-    if (!currentTest || !currentTest.questions || !currentTest.questions[index]) {
-        console.error('Question not found at index:', index, 'Test:', currentTest);
-        return;
+// === Submitting ===
+
+async function submitTest({ timeUp = false } = {}) {
+    if (!activeTest) return;
+
+    if (!timeUp) {
+        const unanswered = activeTest.answers.filter(a => a === null).length;
+        const flaggedCount = activeTest.flagged.size;
+        const warnings = [];
+        if (unanswered) warnings.push(`${unanswered} unanswered ${unanswered === 1 ? 'question' : 'questions'}`);
+        if (flaggedCount) warnings.push(`${flaggedCount} flagged ${flaggedCount === 1 ? 'question' : 'questions'}`);
+
+        const ok = await showDialog({
+            title: 'Submit your test?',
+            body: warnings.length
+                ? `You still have ${warnings.join(' and ')}. You can't change your answers after submitting.`
+                : 'You\'ve answered every question. You can\'t change your answers after submitting.',
+            confirmText: 'Submit',
+            cancelText: 'Keep working'
+        });
+        if (!ok || !activeTest) return;
     }
-    
-    const question = currentTest.questions[index];
-    console.log('Loading question', index + 1, ':', question.question.substring(0, 50) + '...');
-    
-    // Update question text
-    const questionText = document.getElementById('question-text');
-    const questionMarks = document.getElementById('question-marks');
-    const questionYear = document.getElementById('question-year');
-    
-    if (questionText) questionText.textContent = question.question;
-    if (questionMarks) questionMarks.textContent = `[${question.marks} marks]`;
-    if (questionYear) questionYear.textContent = question.year;
-    
-    // Update counter
-    const counter = document.getElementById('question-counter');
-    if (counter) {
-        counter.textContent = `Question ${index + 1}/${currentTest.questions.length}`;
+
+    stopTimer();
+    const result = scoreTest(activeTest);
+    activeTest = null;
+    clearSavedTest();
+
+    lastResult = { ...result, saveState: 'saving', id: null };
+    storeReviewData(lastResult);
+    renderResults(timeUp);
+    navigate('results');
+
+    try {
+        lastResult.id = await saveTestResult(user, result);
+        lastResult.saveState = 'saved';
+    } catch (error) {
+        console.error('Could not save result:', error);
+        lastResult.saveState = 'failed';
     }
-    
-    // Update progress bar
-    const progress = ((index + 1) / currentTest.questions.length) * 100;
-    const progressFill = document.getElementById('progress-fill');
-    if (progressFill) {
-        progressFill.style.width = `${progress}%`;
-    }
-    
-    // Load options
-    const optionsContainer = document.getElementById('options-container');
-    if (!optionsContainer) {
-        console.error('Options container not found!');
-        return;
-    }
-    
-    optionsContainer.innerHTML = '';
-    
-    question.options.forEach((option, i) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'option';
-        if (userAnswers[index] === i) {
-            optionDiv.classList.add('selected');
+    renderSaveState();
+    refreshData();
+}
+
+function scoreTest(test) {
+    let obtainedMarks = 0;
+    let totalMarks = 0;
+    let correctCount = 0;
+    const topicStats = {};
+
+    test.questions.forEach((question, i) => {
+        const marks = question.marks || 1;
+        const isCorrect = test.answers[i] === question.correct;
+        totalMarks += marks;
+        if (isCorrect) {
+            obtainedMarks += marks;
+            correctCount++;
         }
-        
-        optionDiv.innerHTML = `
-            <span class="option-label">${String.fromCharCode(65 + i)}</span>
-            <span class="option-text">${option}</span>
-        `;
-        
-        optionDiv.addEventListener('click', () => selectAnswer(i));
-        optionsContainer.appendChild(optionDiv);
+        const topic = question.topic || 'other';
+        topicStats[topic] = topicStats[topic] || { correct: 0, total: 0 };
+        topicStats[topic].total++;
+        if (isCorrect) topicStats[topic].correct++;
     });
-    
-    // Update flag button
-    const flagBtn = document.getElementById('flag-question');
-    if (flagBtn) {
-        if (flaggedQuestions.has(index)) {
-            flagBtn.innerHTML = '<i class="fas fa-flag"></i> Unflag';
-            flagBtn.classList.add('flagged');
-        } else {
-            flagBtn.innerHTML = '<i class="far fa-flag"></i> Flag';
-            flagBtn.classList.remove('flagged');
-        }
-    }
-    
-    // Update navigation buttons
-    const prevBtn = document.getElementById('prev-question');
-    const nextBtn = document.getElementById('next-question');
-    
-    if (prevBtn) prevBtn.disabled = index === 0;
-    if (nextBtn) {
-        nextBtn.textContent = index === currentTest.questions.length - 1 ? 'Finish' : 'Next';
-    }
-}
 
-// Select answer
-function selectAnswer(answerIndex) {
-    userAnswers[currentQuestionIndex] = answerIndex;
-    
-    // Update UI
-    document.querySelectorAll('.option').forEach((option, i) => {
-        if (i === answerIndex) {
-            option.classList.add('selected');
-        } else {
-            option.classList.remove('selected');
+    // Lowest accuracy wins; with a tie, the topic with more questions
+    let weakest = 'None';
+    let weakestPct = Infinity;
+    let weakestTotal = 0;
+    Object.entries(topicStats).forEach(([topic, stats]) => {
+        const pct = stats.correct / stats.total;
+        if (pct < 1 && (pct < weakestPct || (pct === weakestPct && stats.total > weakestTotal))) {
+            weakest = topic;
+            weakestPct = pct;
+            weakestTotal = stats.total;
         }
     });
+
+    return {
+        testType: test.type,
+        title: test.title,
+        percentage: totalMarks ? Math.round((obtainedMarks / totalMarks) * 100) : 0,
+        obtainedMarks,
+        totalMarks,
+        correctCount,
+        timeSpent: test.timeLimit - Math.max(0, test.timeRemaining),
+        weakestTopic: weakest,
+        topicStats,
+        questionKeys: test.questions.map(q => q.key),
+        answers: [...test.answers]
+    };
 }
 
-// Flag question
-function flagQuestion() {
-    if (flaggedQuestions.has(currentQuestionIndex)) {
-        flaggedQuestions.delete(currentQuestionIndex);
-    } else {
-        flaggedQuestions.add(currentQuestionIndex);
-    }
-    loadQuestion(currentQuestionIndex);
+function storeReviewData(result) {
+    try {
+        localStorage.setItem('reviewData', JSON.stringify({
+            title: result.title,
+            testType: result.testType,
+            timeSpent: result.timeSpent,
+            questionKeys: result.questionKeys,
+            answers: result.answers
+        }));
+    } catch (e) { /* review falls back to the saved result */ }
 }
 
-// Navigation
-function previousQuestion() {
-    if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        loadQuestion(currentQuestionIndex);
-    }
-}
+// === Results page ===
 
-function nextQuestion() {
-    if (currentQuestionIndex < currentTest.questions.length - 1) {
-        currentQuestionIndex++;
-        loadQuestion(currentQuestionIndex);
-    } else {
-        // If on last question and clicking "Finish", submit test
-        submitTest();
-    }
-}
+function renderResults(timeUp) {
+    const r = lastResult;
+    const questionCount = r.questionKeys.length;
+    const weakHasQuestions = r.weakestTopic !== 'None' && TOPIC_COUNTS[r.weakestTopic];
 
-// Replace the alert with detailed analytics modal
-function showDetailedResults(score, totalMarks, percentage, timeSpent, questions, weakestTopic) {
-    const minutes = Math.floor(timeSpent / 60);
-    const seconds = timeSpent % 60;
-    
-    // Create modal HTML WITH REVIEW BUTTON - FIXED BUTTON POSITION
-    const modalHTML = `
-        <div class="modal-overlay" id="results-modal">
-            <div class="result-modal" style="
-                max-height: 85vh;
-                display: flex;
-                flex-direction: column;
-            ">
-                <div style="
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: 25px;
-                    max-height: calc(85vh - 120px);
-                ">
-                    <h2><i class="fas fa-chart-bar"></i> Test Results</h2>
-                    
-                    <div class="result-stats">
-                        <h3 style="color: #00d4ff; margin-bottom: 15px;">Overall Performance</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div>
-                                <p style="margin: 5px 0;"><strong>Score:</strong> <span style="color: #2ed573; font-size: 24px;">${score}/${totalMarks}</span></p>
-                                <p style="margin: 5px 0;"><strong>Percentage:</strong> ${percentage}%</p>
-                                <p style="margin: 5px 0;"><strong>Time:</strong> ${minutes}m ${seconds}s</p>
-                            </div>
-                            <div>
-                                <p style="margin: 5px 0;"><strong>Questions:</strong> ${questions.length}</p>
-                                <p style="margin: 5px 0;"><strong>Correct:</strong> ${score}</p>
-                                <p style="margin: 5px 0;"><strong>Weakest Topic:</strong> ${weakestTopic}</p>
-                            </div>
-                        </div>
-                        
-                        <h3 style="color: #00d4ff; margin-bottom: 15px;">Topic Breakdown</h3>
-                        <div id="topic-breakdown" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
-                            <!-- Will be filled by JavaScript -->
-                        </div>
-                        
-                        <h3 style="color: #00d4ff; margin-bottom: 15px; margin-top: 20px;">Recommendations</h3>
-                        <p style="color: white; font-size: 14px; line-height: 1.5;">
-                            ${getRecommendation(percentage, weakestTopic)}
-                        </p>
-                    </div>
+    const breakdown = Object.entries(r.topicStats)
+        .map(([topic, s]) => ({ topic, ...s, pct: Math.round((s.correct / s.total) * 100) }))
+        .sort((a, b) => a.pct - b.pct);
+
+    document.getElementById('results-content').innerHTML = `
+        ${timeUp ? '<div class="alert alert-info"><i class="far fa-clock"></i><span>Time\'s up! Your test was submitted automatically.</span></div>' : ''}
+        <div class="card results-hero">
+            <div class="score-ring ${meterClass(r.percentage)}" style="--pct: ${r.percentage}">
+                <span><strong>${r.percentage}%</strong><small>${r.obtainedMarks}/${r.totalMarks} marks</small></span>
+            </div>
+            <div class="results-summary">
+                <p class="eyebrow">${escapeHtml(r.title)}</p>
+                <h1 id="results-title">${headline(r.percentage)}</h1>
+                <p>${escapeHtml(recommendation(r.percentage, r.weakestTopic))}</p>
+                <div class="results-facts">
+                    <span><i class="far fa-circle-check"></i> ${r.correctCount} of ${questionCount} correct</span>
+                    <span><i class="far fa-clock"></i> ${formatDuration(r.timeSpent)}</span>
+                    <span id="save-state"></span>
                 </div>
-                
-                <!-- BUTTONS - ALWAYS VISIBLE AT BOTTOM -->
-                <div style="
-                    padding: 20px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    background: rgba(0, 0, 0, 0.3);
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    position: sticky;
-                    bottom: 0;
-                ">
-                    <button id="review-test" class="btn-submit" style="background: #667eea; padding: 14px;">
-                        <i class="fas fa-redo"></i> Review Answers
-                    </button>
-                    <button id="close-results" class="btn-submit" style="padding: 14px;">
-                        <i class="fas fa-home"></i> Return to Dashboard
-                    </button>
+                <div class="results-actions">
+                    <a href="review-answers.html" class="btn btn-primary" id="review-link"><i class="far fa-eye"></i> Review answers</a>
+                    ${weakHasQuestions ? `<button type="button" class="btn btn-secondary" data-start="topic:${r.weakestTopic}">Practise ${escapeHtml(topicName(r.weakestTopic))}</button>` : ''}
+                    <a href="#home" class="btn btn-ghost">Back to home</a>
                 </div>
             </div>
         </div>
+
+        <div class="card section-card">
+            <h2 class="card-title">Topic breakdown</h2>
+            <ul class="breakdown">
+                ${breakdown.map(b => `
+                    <li>
+                        <div class="breakdown-label">
+                            <span>${escapeHtml(topicName(b.topic))}</span>
+                            <span>${b.correct}/${b.total} · <strong>${b.pct}%</strong></span>
+                        </div>
+                        <div class="meter ${meterClass(b.pct)}"><span style="width: ${b.pct}%"></span></div>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
     `;
-    
-    // Add to page
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Add topic breakdown
-    const breakdown = calculateTopicBreakdown(currentTest.questions, userAnswers);
-    document.getElementById('topic-breakdown').innerHTML = breakdown;
-    
-    // ADD EVENT LISTENER FOR REVIEW BUTTON
-    document.getElementById('review-test').addEventListener('click', () => {
-        // Store the test data in localStorage
-        localStorage.setItem('reviewData', JSON.stringify({
-            questions: currentTest.questions,
-            userAnswers: userAnswers,
-            testType: currentTest.type
-        }));
-        
-        // Redirect to review page
-        window.location.href = 'review-answers.html';
-    });
-    
-    // Add event listener for close button
-    document.getElementById('close-results').addEventListener('click', () => {
-        document.getElementById('results-modal').remove();
-        switchPage('home');
-    });
+    renderSaveState();
 }
 
-function calculateTopicBreakdown(questions, answers) {
-    const topicStats = {};
-    
-    questions.forEach((question, index) => {
-        if (!question.topic) return;
-        
-        if (!topicStats[question.topic]) {
-            topicStats[question.topic] = { correct: 0, total: 0 };
-        }
-        
-        topicStats[question.topic].total++;
-        if (answers[index] === question.correct) {
-            topicStats[question.topic].correct++;
-        }
-    });
-    
-    let html = '';
-    Object.entries(topicStats).forEach(([topic, stats]) => {
-        const percentage = Math.round((stats.correct / stats.total) * 100);
-        const color = percentage >= 70 ? '#2ed573' : percentage >= 50 ? '#ffa502' : '#ff4757';
-        
-        html += `
-            <div style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span style="color: white;">${topic}</span>
-                    <span style="color: ${color}; font-weight: bold;">${percentage}%</span>
-                </div>
-                <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; width: ${percentage}%; background: ${color}; border-radius: 4px;"></div>
-                </div>
-                <small style="color: rgba(255, 255, 255, 0.5);">${stats.correct}/${stats.total} correct</small>
-            </div>
-        `;
-    });
-    
-    return html || '<p style="color: rgba(255, 255, 255, 0.7);">No topic data available.</p>';
-}
+function renderSaveState() {
+    const el = document.getElementById('save-state');
+    if (!el || !lastResult) return;
+    const states = {
+        saving: '<i class="fas fa-rotate"></i> Saving to your progress…',
+        saved: '<i class="fas fa-cloud"></i> Saved to your progress',
+        failed: '<i class="fas fa-triangle-exclamation"></i> Couldn\'t save. Check your connection.'
+    };
+    el.innerHTML = states[lastResult.saveState];
+    el.className = lastResult.saveState === 'failed' ? 'text-danger' : '';
 
-function getRecommendation(percentage, weakestTopic) {
-    if (percentage >= 80) {
-        return "Excellent! You're mastering the content. Try challenging yourself with mixed questions or time trials.";
-    } else if (percentage >= 60) {
-        return `Good work! Focus on improving your ${weakestTopic} knowledge. Review the topic notes and practice more questions in that area.`;
-    } else {
-        return `You need more practice with ${weakestTopic}. Study the topic fundamentals and try the topic-specific practice tests.`;
+    if (lastResult.id) {
+        document.getElementById('review-link').href = `review-answers.html?id=${encodeURIComponent(lastResult.id)}`;
     }
 }
 
-// Submit test
-async function submitTest() {
-    console.log('Submitting test...');
-    clearInterval(testTimer);
-    
-    if (!currentTest || !currentTest.questions) {
-        alert('Test data not found');
-        return;
-    }
-    
-    // Calculate score
-    let score = 0;
-    let totalMarks = 0;
-    let topicPerformance = {};
-    
-    currentTest.questions.forEach((question, index) => {
-        if (!question) return;
-        
-        totalMarks += question.marks || 1;
-        if (userAnswers[index] === question.correct) {
-            score += question.marks || 1;
-            
-            // Track topic performance
-            if (question.topic) {
-                if (!topicPerformance[question.topic]) {
-                    topicPerformance[question.topic] = { correct: 0, total: 0 };
-                }
-                topicPerformance[question.topic].correct += 1;
-            }
-        }
-        
-        if (question.topic) {
-            if (!topicPerformance[question.topic]) {
-                topicPerformance[question.topic] = { correct: 0, total: 0 };
-            }
-            topicPerformance[question.topic].total += 1;
-        }
-    });
-    
-    const percentage = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0;
-    const timeSpent = currentTest.timeLimit - timeRemaining;
-    
-    // Find weakest topic
-    let weakestTopic = 'None';
-    let lowestPercentage = 100;
-    
-    Object.entries(topicPerformance).forEach(([topic, stats]) => {
-        const topicPercent = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-        if (topicPercent < lowestPercentage) {
-            lowestPercentage = topicPercent;
-            weakestTopic = topic;
-        }
-    });
-    
-    // Show detailed results modal (REPLACED THE ALERT)
-    showDetailedResults(score, totalMarks, percentage, timeSpent, currentTest.questions, weakestTopic);
-    
-    // Save results to Firestore
-    const user = auth.currentUser;
-    if (user) {
-        try {
-            const testResult = {
-                userId: user.uid,
-                testType: currentTest.type,
-                score: percentage,
-                totalMarks: totalMarks,
-                obtainedMarks: score,
-                timeSpent: timeSpent,
-                weakestTopic: weakestTopic,
-                timestamp: serverTimestamp()
-            };
-            
-            await addDoc(collection(db, 'testResults'), testResult);
-            
-            // Update user stats
-            const userRef = doc(db, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const newPapers = (userData.papersAttempted || 0) + 1;
-                const newAverage = Math.round(((userData.averageScore || 0) * (newPapers - 1) + percentage) / newPapers);
-                const newMastered = (userData.questionsMastered || 0) + score;
-                
-                await updateDoc(userRef, {
-                    papersAttempted: newPapers,
-                    averageScore: newAverage,
-                    questionsMastered: newMastered,
-                    weakestTopic: weakestTopic,
-                    lastTestDate: serverTimestamp()
-                });
-            } else {
-                // Create user document
-                await setDoc(userRef, {
-                    name: user.displayName || 'Student',
-                    email: user.email,
-                    papersAttempted: 1,
-                    averageScore: percentage,
-                    questionsMastered: score,
-                    weakestTopic: weakestTopic,
-                    createdAt: serverTimestamp()
-                });
-            }
-            
-            console.log('Results saved to Firestore');
-        } catch (error) {
-            console.error('Error saving results:', error);
-        }
-    }
-    
-    // Reset test state
-    currentTest = null;
-    currentQuestionIndex = 0;
-    userAnswers = [];
-    flaggedQuestions.clear();
-    
-    // Don't return to home page automatically - let the modal stay
-    // The user will click "Return Home" or "Review Answers"
+function headline(pct) {
+    if (pct >= 80) return 'Excellent work!';
+    if (pct >= 60) return 'Good effort!';
+    if (pct >= 40) return 'You\'re getting there';
+    return 'Keep practising';
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Dashboard DOM loaded');
-    // Initial page setup
-    switchPage('home');
-});
+function recommendation(pct, weakest) {
+    const topic = weakest && weakest !== 'None' ? topicName(weakest) : null;
+    if (!topic) return 'You got everything right. Try a full paper or a mixed test to stretch yourself.';
+    if (pct >= 80) return `You're in great shape. To polish your score, revisit ${topic}.`;
+    if (pct >= 60) return `Solid result. ${topic} cost you the most marks, so that's the best place to focus next.`;
+    return `Review your answers first, then work through ${topic}. Short, regular practice works better than one long session.`;
+}
+
+// === Small helpers ===
+
+function resultTitle(r) {
+    if (r.title) return r.title;
+    if (r.testType === 'mixed') return 'Mixed practice';
+    if (r.testType?.startsWith('topic-')) return `${topicName(r.testType.slice(6))} practice`;
+    return getPaper(r.testType)?.title || r.testType || 'Test';
+}
+
+function reviewLink(r) {
+    if (!r.questionKeys?.length) return '';
+    return `<a class="btn btn-ghost btn-sm" href="review-answers.html?id=${encodeURIComponent(r.id)}">Review</a>`;
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function scoreBadge(score) {
+    if (score >= 70) return 'badge-success';
+    if (score >= 50) return 'badge-warning';
+    return 'badge-danger';
+}
+
+function meterClass(pct) {
+    if (pct >= 70) return 'is-good';
+    if (pct >= 50) return 'is-ok';
+    return 'is-low';
+}

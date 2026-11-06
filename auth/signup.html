@@ -3,72 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | Life Sciences PowerPrep</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Sign up | PowerPrep</title>
+    <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="firebase-config.js"></script>
+    <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="glass-panel auth-panel">
-            <a href="../index.html" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back to Home
+    <div class="auth-page">
+        <div class="auth-top">
+            <a href="../index.html" class="brand">
+                <span class="brand-mark"><i class="fas fa-dna"></i></span>
+                PowerPrep
             </a>
-            
-            <div class="logo-header">
-                <i class="fas fa-dna logo-icon"></i>
-                <h1>Join THE <b>PowerPrep</b></h1>
-                <p class="tagline">Start your mastery journey today</p>
-            </div>
-            
-            <form id="signup-form" class="auth-form">
-                <div class="input-group">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="signup-email" class="input-field" placeholder="Email" required>
-                    <div id="signup-email-error" class="error-message"></div>
+            <button class="icon-btn" id="theme-toggle" type="button"></button>
+        </div>
+
+        <main class="auth-card card">
+            <h1>Create your account</h1>
+            <p class="auth-subtitle">Free practice for Grade 12 Life Sciences.</p>
+
+            <div id="form-alert"></div>
+
+            <form id="signup-form" novalidate>
+                <div class="field">
+                    <label for="signup-name">Name</label>
+                    <input type="text" id="signup-name" class="input" placeholder="What should we call you?" autocomplete="given-name" maxlength="40" required>
+                    <div id="signup-name-error" class="field-error"></div>
                 </div>
-                
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="signup-password" class="input-field" placeholder="Password (min 6 characters)" required>
-                    <div id="signup-password-error" class="error-message"></div>
+
+                <div class="field">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" class="input" placeholder="you@example.com" autocomplete="email" required>
+                    <div id="signup-email-error" class="field-error"></div>
                 </div>
-                
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="confirm-password" class="input-field" placeholder="Confirm Password" required>
-                    <div id="confirm-password-error" class="error-message"></div>
+
+                <div class="field">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" class="input" placeholder="At least 6 characters" autocomplete="new-password" required>
+                    <div id="signup-password-error" class="field-error"></div>
                 </div>
-                
+
+                <div class="field">
+                    <label for="confirm-password">Confirm password</label>
+                    <input type="password" id="confirm-password" class="input" placeholder="Type it again" autocomplete="new-password" required>
+                    <div id="confirm-password-error" class="field-error"></div>
+                </div>
+
                 <div class="terms">
                     <label class="checkbox">
-                        <input type="checkbox" id="accept-terms" required>
-                        <span>I agree to the <a href="#" class="form-link">Terms of Service</a> and <a href="#" class="form-link">Privacy Policy</a></span>
+                        <input type="checkbox" id="accept-terms">
+                        <span>I agree that PowerPrep may store my name, email and test results to track my progress.</span>
                     </label>
+                    <div id="terms-error" class="field-error"></div>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" id="signup-btn">
-                    <span>Create Account</span>
-                    <i class="fas fa-spinner loading"></i>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="signup-btn">
+                    <span class="spinner"></span>
+                    <span>Create account</span>
                 </button>
             </form>
-            
-            <div class="divider">
-                <span>OR</span>
-            </div>
-            
-            <button class="btn btn-google" id="google-signup">
-                <i class="fab fa-google"></i>
-                <span>Sign up with Google</span>
+
+            <div class="divider">or</div>
+
+            <button type="button" class="btn btn-google btn-lg btn-block" id="google-signup">
+                <span class="google-slot"></span>
+                <span>Continue with Google</span>
             </button>
-            
-            <p class="form-footer">
-                Already have an account?
-                <a href="login.html" class="form-link">Login</a>
+
+            <p class="auth-footer">
+                Already have an account? <a href="login.html" class="text-link">Log in</a>
             </p>
-        </div>
+        </main>
     </div>
-    
+
     <script type="module" src="signup.js"></script>
 </body>
 </html>

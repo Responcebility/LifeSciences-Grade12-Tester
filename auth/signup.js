@@ -1,281 +1,135 @@
 import { auth } from './firebase-config.js';
-import { 
+import {
     createUserWithEmailAndPassword,
-    GoogleAuthProvider, 
-    signInWithPopup 
+    updateProfile,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-// Check if already logged in
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+    DASHBOARD_URL,
+    GOOGLE_LOGO,
+    friendlyAuthError,
+    setLoading,
+    showFormAlert,
+    setFieldError,
+    isValidEmail,
+    signInWithGoogle
+} from './auth-common.js';
+import { initThemeToggle } from '../shared/ui.js';
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Already logged in, redirect to dashboard
-        window.location.href = '../dashboard/index.html';
-    }
-});
-
-
-// DOM Elements
-const signupForm = document.getElementById('signup-form');
+const form = document.getElementById('signup-form');
+const nameInput = document.getElementById('signup-name');
 const emailInput = document.getElementById('signup-email');
 const passwordInput = document.getElementById('signup-password');
-const confirmPasswordInput = document.getElementById('confirm-password');
+const confirmInput = document.getElementById('confirm-password');
+const termsInput = document.getElementById('accept-terms');
+const nameError = document.getElementById('signup-name-error');
 const emailError = document.getElementById('signup-email-error');
 const passwordError = document.getElementById('signup-password-error');
-const confirmPasswordError = document.getElementById('confirm-password-error');
+const confirmError = document.getElementById('confirm-password-error');
+const termsError = document.getElementById('terms-error');
 const signupBtn = document.getElementById('signup-btn');
-const loadingIcon = signupBtn.querySelector('.loading');
-const googleSignupBtn = document.getElementById('google-signup');
+const googleBtn = document.getElementById('google-signup');
+const formAlert = document.getElementById('form-alert');
 
-// Email validation
-emailInput.addEventListener('input', validateSignupEmail);
-emailInput.addEventListener('blur', validateSignupEmail);
+initThemeToggle(document.getElementById('theme-toggle'));
+googleBtn.querySelector('.google-slot').innerHTML = GOOGLE_LOGO;
 
-function validateSignupEmail() {
-    const email = emailInput.value.trim();
-    emailError.classList.remove('show');
-    emailInput.classList.remove('error');
-    
-    if (!email) return true;
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        emailError.textContent = 'Please enter a valid email address';
-        emailError.classList.add('show');
-        emailInput.classList.add('error');
-        return false;
-    }
-    return true;
-}
-
-// Password validation
-passwordInput.addEventListener('input', validateSignupPassword);
-
-function validateSignupPassword() {
-    const password = passwordInput.value;
-    passwordError.classList.remove('show');
-    passwordInput.classList.remove('error');
-    
-    if (!password) return true;
-    
-    if (password.length < 6) {
-        passwordError.textContent = 'Password must be at least 6 characters';
-        passwordError.classList.add('show');
-        passwordInput.classList.add('error');
-        return false;
-    }
-    return true;
-}
-
-// Confirm password validation
-confirmPasswordInput.addEventListener('input', validateConfirmPassword);
-
-function validateConfirmPassword() {
-    const password = passwordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
-    confirmPasswordError.classList.remove('show');
-    confirmPasswordInput.classList.remove('error');
-    
-    if (!confirmPassword) return true;
-    
-    if (password !== confirmPassword) {
-        confirmPasswordError.textContent = 'Passwords do not match';
-        confirmPasswordError.classList.add('show');
-        confirmPasswordInput.classList.add('error');
-        return false;
-    }
-    return true;
-}
-
-// Signup form submission
-signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
-    
-    // Clear previous errors
-    emailError.classList.remove('show');
-    passwordError.classList.remove('show');
-    confirmPasswordError.classList.remove('show');
-    emailInput.classList.remove('error');
-    passwordInput.classList.remove('error');
-    confirmPasswordInput.classList.remove('error');
-    
-    // Validate all fields
-    const isEmailValid = validateSignupEmail();
-    const isPasswordValid = validateSignupPassword();
-    const isConfirmPasswordValid = validateConfirmPassword();
-    
-    // Check required fields
-    if (!email) {
-        emailError.textContent = 'Email is required';
-        emailError.classList.add('show');
-        emailInput.classList.add('error');
-        emailInput.focus();
-        return;
-    }
-    
-    if (!password) {
-        passwordError.textContent = 'Password is required';
-        passwordError.classList.add('show');
-        passwordInput.classList.add('error');
-        passwordInput.focus();
-        return;
-    }
-    
-    if (!confirmPassword) {
-        confirmPasswordError.textContent = 'Please confirm your password';
-        confirmPasswordError.classList.add('show');
-        confirmPasswordInput.classList.add('error');
-        confirmPasswordInput.focus();
-        return;
-    }
-    
-    // Check terms acceptance
-    if (!document.getElementById('accept-terms').checked) {
-        alert('Please accept the Terms of Service to continue.');
-        return;
-    }
-    
-    if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
-        return;
-    }
-    
-    // Show loading
-    signupBtn.disabled = true;
-    signupBtn.style.opacity = '0.8';
-    loadingIcon.classList.add('show');
-    
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        showSuccessMessage();
-        
-    
-        
-    }  catch (error) {
-    signupBtn.disabled = false;
-    signupBtn.style.opacity = '1';
-    loadingIcon.classList.remove('show');
-    
-    console.error('Signup error:', error.code, error.message);  // ADD THIS
-    
-    switch(error.code) {
-        case 'auth/email-already-in-use':
-            emailError.textContent = 'Email already registered. Try logging in.';
-            emailError.classList.add('show');
-            emailInput.classList.add('error');
-            emailInput.focus();
-            break;
-            
-        case 'auth/invalid-email':
-            emailError.textContent = 'Invalid email format';
-            emailError.classList.add('show');
-            emailInput.classList.add('error');
-            emailInput.focus();
-            break;
-            
-        case 'auth/weak-password':
-            passwordError.textContent = 'Password is too weak. Use at least 6 characters';
-            passwordError.classList.add('show');
-            passwordInput.classList.add('error');
-            passwordInput.focus();
-            break;
-            
-        case 'auth/network-request-failed':
-            showErrorMessage('Network error. Check your internet connection.');
-            break;
-            
-        default:
-            clearForm()
-            showErrorMessage(`Signup failed: ${error.message}`);
-    }
-}
+// While an account is being created we redirect ourselves once the name is saved
+let creatingAccount = false;
+onAuthStateChanged(auth, (user) => {
+    if (user && !creatingAccount) window.location.replace(DASHBOARD_URL);
 });
 
-// Success message function
-function showSuccessMessage() {
-    const form = document.getElementById('login-form');
-    const successDiv = document.createElement('div');
-    successDiv.className = 'success-message';
-    successDiv.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>Login successful! Redirecting...</span>
-    `;
-    
-    form.parentNode.insertBefore(successDiv, form.nextSibling);
-    
-    // Force redirect after 1.5 seconds
-setTimeout(() => {
-    window.location.href = '../dashboard/index.html';  // Changed to dashboard
-}, 1500);
+[
+    [nameInput, nameError],
+    [emailInput, emailError],
+    [passwordInput, passwordError],
+    [confirmInput, confirmError]
+].forEach(([input, errorEl]) => {
+    input.addEventListener('input', () => setFieldError(input, errorEl, ''));
+});
+termsInput.addEventListener('change', () => { termsError.textContent = ''; });
+
+function validate() {
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    let valid = true;
+
+    if (!name) {
+        setFieldError(nameInput, nameError, 'Enter your name.');
+        valid = false;
+    }
+
+    if (!email) {
+        setFieldError(emailInput, emailError, 'Enter your email address.');
+        valid = false;
+    } else if (!isValidEmail(email)) {
+        setFieldError(emailInput, emailError, 'Enter a valid email address.');
+        valid = false;
+    }
+
+    if (password.length < 6) {
+        setFieldError(passwordInput, passwordError, 'Use at least 6 characters.');
+        valid = false;
+    }
+
+    if (!confirmInput.value) {
+        setFieldError(confirmInput, confirmError, 'Confirm your password.');
+        valid = false;
+    } else if (confirmInput.value !== password) {
+        setFieldError(confirmInput, confirmError, 'Passwords don\'t match.');
+        valid = false;
+    }
+
+    if (!termsInput.checked) {
+        termsError.textContent = 'Please tick the box to continue.';
+        valid = false;
+    }
+
+    if (!valid) form.querySelector('.input.error')?.focus();
+    return valid;
 }
 
-// Clear form function
-function clearForm() {
-    emailInput.value = '';
-    passwordInput.value = '';
-    confirmPasswordInput.value = '';
-    document.getElementById('accept-terms').checked = false;
-    
-    emailError.classList.remove('show');
-    passwordError.classList.remove('show');
-    confirmPasswordError.classList.remove('show');
-    emailInput.classList.remove('error');
-    passwordInput.classList.remove('error');
-    confirmPasswordInput.classList.remove('error');
-}
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showFormAlert(formAlert, '');
+    if (!validate()) return;
 
-// Call clearForm() before showing error messages
-
-// Error message function
-function showErrorMessage(message) {
-    const form = document.getElementById('signup-form');
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'global-error-message';
-    errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i>
-        <span>${message}</span>
-    `;
-    
-    form.parentNode.insertBefore(errorDiv, form.nextSibling);
-    
-    setTimeout(() => {
-        errorDiv.style.opacity = '0';
-        errorDiv.style.transition = 'opacity 0.3s';
-        setTimeout(() => errorDiv.remove(), 300);
-    }, 5000);
-}
-
-// Google signup
-googleSignupBtn.addEventListener('click', async () => {
-    const provider = new GoogleAuthProvider();
-    const originalHTML = googleSignupBtn.innerHTML;
-    
+    creatingAccount = true;
+    setLoading(signupBtn, true);
     try {
-        googleSignupBtn.innerHTML = '<i class="fas fa-spinner loading show"></i> Connecting...';
-        googleSignupBtn.disabled = true;
-        googleSignupBtn.style.opacity = '0.8';
-        
-        await signInWithPopup(auth, provider);
-        
-        googleSignupBtn.innerHTML = '<i class="fas fa-check"></i> Success!';
-        googleSignupBtn.style.background = 'linear-gradient(135deg, #2ed573, #26c464)';
-        
-        setTimeout(() => {
-            window.location.href = 'dashboard/dna-test.html';
-        }, 1500);
-        
+        const { user } = await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+        await updateProfile(user, { displayName: nameInput.value.trim() });
+        window.location.replace(DASHBOARD_URL);
     } catch (error) {
-        googleSignupBtn.innerHTML = originalHTML;
-        googleSignupBtn.disabled = false;
-        googleSignupBtn.style.opacity = '1';
-        
-        if (error.code === 'auth/popup-closed-by-user') {
-            showErrorMessage('Google sign-up was cancelled.');
+        creatingAccount = false;
+        setLoading(signupBtn, false);
+        if (error.code === 'auth/email-already-in-use' || error.code === 'auth/invalid-email') {
+            setFieldError(emailInput, emailError, friendlyAuthError(error));
+            emailInput.focus();
+        } else if (error.code === 'auth/weak-password') {
+            setFieldError(passwordInput, passwordError, friendlyAuthError(error));
+            passwordInput.focus();
+        } else if (auth.currentUser) {
+            // The account exists but saving the name failed; carry on to the dashboard
+            window.location.replace(DASHBOARD_URL);
         } else {
-            showErrorMessage('Google sign-up failed. Please try again.');
+            showFormAlert(formAlert, friendlyAuthError(error));
         }
     }
+});
+
+googleBtn.addEventListener('click', async () => {
+    showFormAlert(formAlert, '');
+    setLoading(googleBtn, true);
+    try {
+        if (await signInWithGoogle()) {
+            window.location.replace(DASHBOARD_URL);
+            return;
+        }
+    } catch (error) {
+        showFormAlert(formAlert, friendlyAuthError(error));
+    }
+    setLoading(googleBtn, false);
 });

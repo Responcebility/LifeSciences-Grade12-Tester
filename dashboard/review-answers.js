@@ -1,181 +1,210 @@
+// dashboard/review-answers.js - question-by-question review of a finished test
 import { auth } from '../auth/firebase-config.js';
-import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getQuestionByKey, getPaper, topicName } from './questions.js';
+import { loadResult } from './data.js';
+import { escapeHtml, formatDuration, initThemeToggle } from '../shared/ui.js';
 
-// Check authentication
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById('user-name').textContent = user.displayName || 'Student';
-        document.getElementById('user-email').textContent = user.email;
-        loadReviewData();
-    } else {
-        window.location.href = '../index.html';
-    }
-});
+const root = document.getElementById('review-root');
+let review = null;
+let filter = 'all';
 
-// Load review data from localStorage
-function loadReviewData() {
-    const reviewData = localStorage.getItem('reviewData');
-    
-    if (!reviewData) {
-        document.getElementById('questions-container').innerHTML = `
-            <div class="no-data-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <h3>No test data found</h3>
-                <p>Complete a test first to review your answers.</p>
-                <button class="btn-primary" onclick="goToDashboard()">
-                    <i class="fas fa-home"></i> Back to Dashboard
-                </button>
-            </div>
-        `;
+initThemeToggle(document.querySelectorAll('.theme-toggle'));
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.replace('../index.html');
         return;
     }
-    
+
     try {
-        const data = JSON.parse(reviewData);
-        displayTestReview(data);
+        review = await loadReview(user);
     } catch (error) {
-        console.error('Error loading review data:', error);
-        document.getElementById('questions-container').innerHTML = `
-            <div class="no-data-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <h3>Error loading test data</h3>
-                <p>Please try taking a test again.</p>
-                <button class="btn-primary" onclick="goToDashboard()">
-                    <i class="fas fa-home"></i> Back to Dashboard
-                </button>
-            </div>
-        `;
+        console.error('Could not load review:', error);
+        review = null;
     }
-}
 
-function displayTestReview(data) {
-    const { questions, userAnswers, testType } = data;
-    
-    // Calculate scores
-    let correctCount = 0;
-    let totalMarks = 0;
-    let obtainedMarks = 0;
-    
-    questions.forEach((question, index) => {
-        totalMarks += question.marks || 1;
-        
-        if (userAnswers[index] === question.correct) {
-            correctCount++;
-            obtainedMarks += question.marks || 1;
-        }
-    });
-    
-    const percentage = totalMarks > 0 ? Math.round((obtainedMarks / totalMarks) * 100) : 0;
-    const incorrectCount = questions.length - correctCount;
-    
-    // Update summary
-    document.getElementById('test-title').textContent = getTestTitle(testType);
-    document.getElementById('test-info').textContent = `${questions.length} questions • ${getTestDuration(testType)}`;
-    document.getElementById('test-score-display').textContent = `${percentage}%`;
-    document.getElementById('test-correct').textContent = correctCount;
-    document.getElementById('test-incorrect').textContent = incorrectCount;
-    document.getElementById('test-total').textContent = questions.length;
-    document.getElementById('test-percentage').textContent = percentage;
-    
-    // Display questions
-    displayQuestions(questions, userAnswers);
-    
-    // Setup event listeners
-    setupEventListeners();
-}
-
-function getTestTitle(testType) {
-    const titles = {
-        '2023-nov-1': '2023 November Paper 1',
-        '2023-nov-2': '2023 November Paper 2',
-        '2022-nov-1': '2022 November Paper 1',
-        '2022-nov-2': '2022 November Paper 2',
-        '2021-nov-1': '2021 November Paper 1',
-        '2021-nov-2': '2021 November Paper 2',
-        'gauteng-2023': '2023 Gauteng Trial',
-        'wc-2023': '2023 Western Cape Trial',
-        'mixed': 'Mixed Questions Test',
-        'topic-dna': 'DNA & Protein Synthesis Practice',
-        'topic-genetics': 'Genetics Practice',
-        'topic-evolution': 'Evolution Practice',
-        'topic-reproduction': 'Human Reproduction Practice'
-    };
-    return titles[testType] || testType;
-}
-
-function getTestDuration(testType) {
-    if (testType === 'mixed') return '10 minutes';
-    if (testType.includes('topic-')) return '15 minutes';
-    return '30 minutes';
-}
-
-function displayQuestions(questions, userAnswers) {
-    const container = document.getElementById('questions-container');
-    container.innerHTML = '';
-    
-    questions.forEach((question, index) => {
-        const isCorrect = userAnswers[index] === question.correct;
-        const userAnswer = userAnswers[index];
-        
-        const questionHTML = `
-            <div class="review-question-card ${isCorrect ? 'correct' : 'incorrect'}">
-                <div class="question-header">
-                    <span class="question-number">Q${index + 1}</span>
-                    <span class="status-badge ${isCorrect ? 'correct' : 'incorrect'}">
-                        <i class="fas fa-${isCorrect ? 'check' : 'times'}"></i>
-                        ${isCorrect ? 'Correct' : 'Incorrect'}
-                    </span>
-                </div>
-                
-                <div class="question-text">
-                    <p>${question.question}</p>
-                </div>
-                
-                <div class="answer-comparison">
-                    <div class="your-answer">
-                        <h4><i class="fas fa-user"></i> Your Answer</h4>
-                        <div class="answer-option ${isCorrect ? 'selected correct' : 'selected incorrect'}">
-                            <span class="option-label">${String.fromCharCode(65 + userAnswer)}</span>
-                            <span class="option-text">${question.options[userAnswer] || 'Not answered'}</span>
-                        </div>
-                    </div>
-                    <div class="correct-answer">
-                        <h4><i class="fas fa-check-circle"></i> Correct Answer</h4>
-                        <div class="answer-option correct">
-                            <span class="option-label">${String.fromCharCode(65 + question.correct)}</span>
-                            <span class="option-text">${question.options[question.correct]}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="explanation">
-                    <h4><i class="fas fa-lightbulb"></i> Explanation:</h4>
-                    <p>${question.explanation || 'Review the correct answer and compare with your response.'}</p>
-                </div>
-            </div>
-        `;
-        
-        container.innerHTML += questionHTML;
-    });
-}
-
-function setupEventListeners() {
-    // Back to dashboard button
-    document.getElementById('btn-back-dashboard').addEventListener('click', goToDashboard);
-    
-    // Logout button
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = '../index.html';
-        });
-    });
-}
-
-function goToDashboard() {
-    window.location.href = 'index.html';
-}
-
-// Load data when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    // Data will be loaded after auth check
+    if (review) render();
+    else renderMissing();
 });
+
+// A ?id= link loads a saved result; otherwise use the test that was just finished
+async function loadReview(user) {
+    const id = new URLSearchParams(location.search).get('id');
+    if (id) {
+        const result = await loadResult(id);
+        if (!result || result.userId !== user.uid || !result.questionKeys) return null;
+        return buildReview({
+            title: result.title,
+            testType: result.testType,
+            timeSpent: result.timeSpent,
+            questions: result.questionKeys.map(getQuestionByKey),
+            answers: result.answers.map(a => (a === -1 ? null : a))
+        });
+    }
+
+    let data;
+    try {
+        data = JSON.parse(localStorage.getItem('reviewData'));
+    } catch (e) {
+        return null;
+    }
+    if (!data) return null;
+
+    return buildReview({
+        title: data.title,
+        testType: data.testType,
+        timeSpent: data.timeSpent,
+        // Older saved data stored the full questions instead of keys
+        questions: data.questionKeys ? data.questionKeys.map(getQuestionByKey) : data.questions,
+        answers: data.answers || data.userAnswers || []
+    });
+}
+
+function buildReview({ title, testType, timeSpent, questions, answers }) {
+    if (!Array.isArray(questions) || questions.length === 0) return null;
+    const items = questions
+        .map((question, i) => ({ question, answer: answers[i] ?? null, number: i + 1 }))
+        .filter(item => item.question);
+    if (items.length === 0) return null;
+
+    items.forEach(item => {
+        item.status = item.answer === null ? 'unanswered'
+            : item.answer === item.question.correct ? 'correct'
+            : 'incorrect';
+    });
+
+    let obtained = 0;
+    let total = 0;
+    items.forEach(({ question, status }) => {
+        total += question.marks || 1;
+        if (status === 'correct') obtained += question.marks || 1;
+    });
+
+    return {
+        title: title || testTitle(testType),
+        timeSpent,
+        items,
+        obtained,
+        total,
+        percentage: total ? Math.round((obtained / total) * 100) : 0,
+        counts: {
+            correct: items.filter(i => i.status === 'correct').length,
+            incorrect: items.filter(i => i.status === 'incorrect').length,
+            unanswered: items.filter(i => i.status === 'unanswered').length
+        }
+    };
+}
+
+function testTitle(testType = '') {
+    if (testType === 'mixed') return 'Mixed practice';
+    if (testType.startsWith('topic-')) return `${topicName(testType.slice(6))} practice`;
+    return getPaper(testType)?.title || 'Test';
+}
+
+function render() {
+    const { counts } = review;
+    const ringClass = review.percentage >= 70 ? 'is-good' : review.percentage >= 50 ? 'is-ok' : 'is-low';
+
+    root.innerHTML = `
+        <section class="card review-summary">
+            <div class="score-ring small ${ringClass}" style="--pct: ${review.percentage}">
+                <span><strong>${review.percentage}%</strong></span>
+            </div>
+            <div class="review-summary-text">
+                <p class="eyebrow">Review answers</p>
+                <h1>${escapeHtml(review.title)}</h1>
+                <p>${review.obtained}/${review.total} marks${review.timeSpent ? ` · ${formatDuration(review.timeSpent)}` : ''}</p>
+            </div>
+        </section>
+
+        <div class="filter-bar" role="tablist" aria-label="Filter questions">
+            ${filterButton('all', 'All', review.items.length)}
+            ${filterButton('incorrect', 'Incorrect', counts.incorrect)}
+            ${filterButton('unanswered', 'Unanswered', counts.unanswered)}
+            ${filterButton('correct', 'Correct', counts.correct)}
+        </div>
+
+        <div class="review-list" id="review-list"></div>
+
+        <div class="review-footer">
+            <a href="index.html" class="btn btn-primary btn-lg"><i class="fas fa-house"></i> Back to dashboard</a>
+        </div>
+    `;
+
+    root.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+        filter = btn.dataset.filter;
+        root.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+        renderList();
+    }));
+    renderList();
+}
+
+function filterButton(value, label, count) {
+    return `
+        <button type="button" class="filter-chip" role="tab" data-filter="${value}" aria-selected="${filter === value}" ${count === 0 && value !== 'all' ? 'disabled' : ''}>
+            ${label} <span>${count}</span>
+        </button>
+    `;
+}
+
+function renderList() {
+    const list = document.getElementById('review-list');
+    const items = review.items.filter(item => filter === 'all' || item.status === filter);
+
+    if (items.length === 0) {
+        list.innerHTML = '<div class="empty-state compact"><p>No questions in this group.</p></div>';
+        return;
+    }
+
+    list.innerHTML = items.map(({ question, answer, number, status }) => {
+        const statusText = { correct: 'Correct', incorrect: 'Incorrect', unanswered: 'Not answered' }[status];
+        const statusIcon = { correct: 'check', incorrect: 'xmark', unanswered: 'minus' }[status];
+        const statusBadge = { correct: 'badge-success', incorrect: 'badge-danger', unanswered: 'badge-warning' }[status];
+
+        return `
+            <article class="card review-card is-${status}">
+                <header class="review-card-head">
+                    <span class="review-number">Question ${number}</span>
+                    <span class="badge">${escapeHtml(topicName(question.topic))}</span>
+                    <span class="badge ${statusBadge}"><i class="fas fa-${statusIcon}"></i> ${statusText}</span>
+                </header>
+                <h2 class="review-question">${escapeHtml(question.question)}</h2>
+                <ul class="review-options">
+                    ${question.options.map((option, i) => {
+                        const isCorrect = i === question.correct;
+                        const isChosen = i === answer;
+                        const cls = isCorrect ? 'is-correct' : isChosen ? 'is-wrong' : '';
+                        const tag = isCorrect && isChosen ? 'Your answer'
+                            : isCorrect ? 'Correct answer'
+                            : isChosen ? 'Your answer' : '';
+                        return `
+                            <li class="review-option ${cls}">
+                                <span class="option-label">${String.fromCharCode(65 + i)}</span>
+                                <span class="review-option-text">${escapeHtml(option)}</span>
+                                ${tag ? `<span class="review-tag">${tag}</span>` : ''}
+                            </li>
+                        `;
+                    }).join('')}
+                </ul>
+                ${question.explanation ? `
+                    <div class="explanation">
+                        <i class="far fa-lightbulb"></i>
+                        <p>${escapeHtml(question.explanation)}</p>
+                    </div>
+                ` : ''}
+            </article>
+        `;
+    }).join('');
+}
+
+function renderMissing() {
+    root.innerHTML = `
+        <div class="card empty-state review-missing">
+            <i class="far fa-clipboard"></i>
+            <h1>Nothing to review yet</h1>
+            <p>Finish a test and you'll be able to go through every answer here.</p>
+            <a href="index.html" class="btn btn-primary">Back to dashboard</a>
+        </div>
+    `;
+}

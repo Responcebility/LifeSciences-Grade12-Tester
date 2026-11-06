@@ -3,67 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Life Sciences PowerPrep</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Log in | PowerPrep</title>
+    <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="firebase-config.js"></script>
+    <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="glass-panel auth-panel">
-            <a href="../index.html" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back to Home
+    <div class="auth-page">
+        <div class="auth-top">
+            <a href="../index.html" class="brand">
+                <span class="brand-mark"><i class="fas fa-dna"></i></span>
+                PowerPrep
             </a>
-            
-            <div class="logo-header">
-                <i class="fas fa-dna logo-icon"></i>
-                <h1>Welcome Back</h1>
-                <p class="tagline">Continue your mastery journey</p>
-            </div>
-            
-            <form id="login-form" class="auth-form">
-                <div class="input-group">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="email" class="input-field" placeholder="Email" required>
-                    <div id="email-error" class="error-message"></div>
+            <button class="icon-btn" id="theme-toggle" type="button"></button>
+        </div>
+
+        <main class="auth-card card">
+            <h1>Welcome back</h1>
+            <p class="auth-subtitle">Log in to continue your exam prep.</p>
+
+            <div id="form-alert"></div>
+
+            <form id="login-form" novalidate>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="input" placeholder="you@example.com" autocomplete="email" required>
+                    <div id="email-error" class="field-error"></div>
                 </div>
-                
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="password" class="input-field" placeholder="Password" required>
-                    <div id="password-error" class="error-message"></div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="input" placeholder="Your password" autocomplete="current-password" required>
+                    <div id="password-error" class="field-error"></div>
                 </div>
-                
-                <div class="form-options">
+
+                <div class="form-row">
                     <label class="checkbox">
-                        <input type="checkbox" id="remember-me">
-                        <span>Remember me</span>
+                        <input type="checkbox" id="remember-me" checked>
+                        <span>Keep me logged in</span>
                     </label>
-                    <a href="#" id="forgot-password" class="form-link">Forgot password?</a>
+                    <button type="button" id="forgot-password" class="text-link">Forgot password?</button>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" id="login-btn">
-                    <span>Login</span>
-                    <i class="fas fa-spinner loading"></i>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-btn">
+                    <span class="spinner"></span>
+                    <span>Log in</span>
                 </button>
             </form>
-            
-            <div class="divider">
-                <span>OR</span>
-            </div>
-            
-            <button class="btn btn-google" id="google-login">
-                <i class="fab fa-google"></i>
-                <span>Sign in with Google</span>
+
+            <div class="divider">or</div>
+
+            <button type="button" class="btn btn-google btn-lg btn-block" id="google-login">
+                <span class="google-slot"></span>
+                <span>Continue with Google</span>
             </button>
-            
-            <p class="form-footer">
-                Don't have an account?
-                <a href="signup.html" class="form-link">Sign up</a>
+
+            <p class="auth-footer">
+                New to PowerPrep? <a href="signup.html" class="text-link">Create an account</a>
             </p>
-        </div>
+        </main>
     </div>
-    
+
     <script type="module" src="login.js"></script>
 </body>
 </html>
