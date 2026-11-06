@@ -1,0 +1,12 @@
+{
+  "name": "powerprep-scripts",
+  "private": true,
+  "type": "module",
+  "description": "One-off admin scripts for PowerPrep (run with Node 18+)",
+  "scripts": {
+    "seed": "node seed.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

@@ -55,6 +55,28 @@ Teachers ask for access on their **Classes** page; approve them from **Admin →
 
 ---
 
+## 🌱 Demo accounts (seed script)
+
+`scripts/seed.mjs` creates demo accounts and sample data in your Firebase project: an admin, two teachers with a class each, six learners with test history, set tests and one pending teacher request.
+
+1. Firebase console → **Project settings → Service accounts → Generate new private key**. Save the file as `service-account.json` in the project root (it is git-ignored; never share or commit it).
+2. Make sure **Authentication → Sign-in method → Email/Password** is enabled.
+3. Run:
+   ```bash
+   cd scripts
+   npm install
+   node seed.mjs --key ../service-account.json --password 123456 --admin-password "<a strong password>"
+   ```
+
+| Role | Email |
+|---|---|
+| Admin | admin@powerprep.test |
+| Teacher | n.dlamini@powerprep.test (class code `LS2BZA`) |
+| Teacher | a.naidoo@powerprep.test (class code `LS2CZA`) |
+| Learners | thandi@, sipho@, lerato@, aisha@, johan@, zanele@powerprep.test |
+
+The script can be run again safely; it updates the same accounts. Give the admin a strong password on a live site.
+
 ## 🛠 Tech stack
 
 - HTML, CSS, JavaScript (ES modules, no build step)
