@@ -144,7 +144,7 @@
 
     <script type="module">
         import { auth } from './auth/firebase-config.js';
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
         import { initThemeToggle, escapeHtml } from './shared/ui.js';
         import { TOPICS, countQuestionsByTopic } from './dashboard/questions.js';
 
@@ -168,7 +168,11 @@
             cta.innerHTML = 'Continue studying <i class="fas fa-arrow-right"></i>';
             const nav = document.getElementById('site-nav');
             nav.querySelectorAll('a').forEach(a => a.remove());
-            nav.insertAdjacentHTML('beforeend', '<a href="dashboard/index.html" class="btn btn-light">Dashboard</a>');
+            nav.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-outline-light nav-login" id="nav-logout">Log out</button><a href="dashboard/index.html" class="btn btn-light">Dashboard</a>');
+            document.getElementById('nav-logout').addEventListener('click', async () => {
+                await signOut(auth);
+                location.reload();
+            });
         });
     </script>
 </body>

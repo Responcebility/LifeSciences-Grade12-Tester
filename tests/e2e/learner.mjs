@@ -95,6 +95,14 @@ await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem('__fakeUser', JSON.stringify({ uid: 'u1', email: 'thandi@example.com', displayName: 'Thandi Mokoena' }));
 });
+// Signed in, the landing page swaps Log in / Sign up for Dashboard + Log out; Log out brings them back
+await page.reload();
+await page.waitForSelector('#nav-logout');
+await page.click('#nav-logout');
+await page.waitForSelector('#site-nav a[href="auth/login.html"]');
+if (!await page.$('#site-nav a[href="auth/signup.html"]')) problems.push('landing: sign up link missing after log out');
+step('landing log out → log in and sign up links back');
+await page.evaluate(() => localStorage.setItem('__fakeUser', JSON.stringify({ uid: 'u1', email: 'thandi@example.com', displayName: 'Thandi Mokoena' })));
 await page.goto(`${base}/dashboard/index.html`);
 await page.waitForTimeout(800);
 await shot(page, '04-home-empty');
