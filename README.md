@@ -13,6 +13,8 @@
 
 ![PowerPrep learner dashboard](docs/screenshots/learner-home.png)
 
+**Contents:** [Try it](#-try-it-in-30-seconds) · [The problem](#-the-problem) · [Features](#-what-it-does) · [Screenshots](#-screenshots) · [Engineering highlights](#-engineering-highlights) · [Architecture](#-architecture) · [Run it locally](#-run-it-locally) · [Roadmap](#-roadmap)
+
 ---
 
 ## ⚡ Try it in 30 seconds
@@ -31,7 +33,7 @@ Open **[life-sciences-grade12-tester.vercel.app](https://life-sciences-grade12-t
 
 ## 🎯 The problem
 
-Grade 12 learners often don't know **which topics are costing them marks**, and teachers have little visibility into where a class is struggling between tests. PowerPrep turns every answered question into data. Learners see their weakest topic and get one-tap practice for it, and teachers see the same insight across their whole class.
+Grade 12 learners often don't know **which topics are costing them marks**, and teachers have little visibility into where a class is struggling between tests. PowerPrep turns every answered question into data. Learners see their weakest topic and get one-tap practice for it, and teachers see the same insight across their whole class. Official past papers, memo self-marking and AI note summaries mean learners can revise in one place, even on a phone with limited data.
 
 ## ✨ What it does
 
@@ -94,7 +96,8 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 **Security is enforced in the database, not the UI.**
 - Learner, teacher and admin roles are enforced by [Firestore security rules](firestore.rules).
 - Learners can only touch their own data, teachers only see learners who joined *their* classes, only admins can grant roles or change questions, and saved results can't be edited.
-- The rules are covered by **[56 allow/deny tests](tests/rules/rules.test.mjs)** run against the Firestore emulator, and were checked again against the live project with the demo accounts.
+- The core rules (roles, profiles, results, questions, classes, members and set tests) are covered by **[56 allow/deny tests](tests/rules/rules.test.mjs)** for the Firestore emulator.
+- The newer online-class, attendance and AI-usage rules were checked against the live project with the demo accounts, including attempts to break them (joining a class you're not in, marking someone else present, resetting your own AI limit).
 
 **AI without exposing the key.**
 - The Groq API key exists only as a Vercel secret. The browser calls [`/api/summarize`](api/summarize.js), a serverless function that checks the Firebase sign-in, enforces a **daily limit per learner** and only then calls Groq.
@@ -116,7 +119,7 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 - Answer options are shuffled on every attempt with a [Fisher–Yates](dashboard/questions.js) shuffle. Answers are stored against the original option order, so scoring, review and old results stay correct.
 
 **No framework and no build step.**
-- Plain ES modules (about 20 files), deployed as static files on Vercel.
+- Plain ES modules (27 files, about 11,000 lines), deployed as static files on Vercel plus one serverless function.
 - A small shared design system ([`shared/theme.css`](shared/theme.css)) drives light and dark mode with CSS custom properties.
 - The illustrations are hand-drawn SVG.
 
@@ -137,7 +140,7 @@ flowchart LR
         R[Review page]
     end
     subgraph Firebase
-        A[(Firebase Auth<br/>email + Google)]
+        A[(Firebase Auth<br/>email and password)]
         S{{Security rules<br/>roles · ownership}}
         F[(Cloud Firestore<br/>africa-south1)]
     end
@@ -189,7 +192,7 @@ assets/                    SVG illustration, doodle patterns and favicon
 api/summarize.js           Serverless function: sign-in check, daily limit, Groq call
 auth/                      Login, sign-up, Firebase config
 dashboard/
-  index.html               Dashboard shell: home, papers, topics, progress, classes, admin, test, results
+  index.html               Dashboard shell: home, papers, topics, progress, classes, AI notes, admin, test, results
   dashboard.js             Routing, test engine, results
   data.js                  Profile and results (Firestore)
   school-data.js           Roles, classes, set tests, online classes, admin data
@@ -221,7 +224,7 @@ cd LifeSciences-Grade12-Tester
 npx serve .            # or: python -m http.server 5500
 ```
 
-The app talks to the hosted Firebase project, so the demo accounts above work locally too.
+The app talks to the hosted Firebase project, so the demo accounts above work locally too. On `localhost:5500`, AI notes call the deployed `/api/summarize` function (it allows that origin), so summaries work locally without a key on your machine.
 
 ### Tests
 
@@ -229,9 +232,9 @@ The app talks to the hosted Firebase project, so the demo accounts above work lo
 cd tests
 npm install
 npm run setup          # downloads Playwright's Chromium once
-npm run test:unit      # Markdown renderer for AI summaries
+npm run test:unit      # 8 checks of the Markdown renderer for AI summaries
 npm run test:e2e       # 4 user journeys + contrast audit (THEME=dark for dark mode)
-npm run test:rules     # 56 security-rule tests in the Firestore emulator (needs Java 21+)
+npm run test:rules     # 56 core security-rule tests in the Firestore emulator (needs Java 21+)
 ```
 
 ### Your own Firebase project
@@ -246,6 +249,8 @@ npm run test:rules     # 56 security-rule tests in the Firestore emulator (needs
 
 ## 🗺 Roadmap
 
+- Afrikaans past papers and memos (the DBE publishes both; the same link check applies)
+- Emulator tests for the online-class and AI-usage rules, and running all tests in GitHub Actions
 - Video embedded inside the app (Jitsi as a Service or Daily) instead of a new tab
 - Structured and diagram questions with marking memos, alongside multiple choice
 - Spaced repetition of questions a learner got wrong
