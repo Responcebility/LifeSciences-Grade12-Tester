@@ -3108,3 +3108,7 @@ body.sheet-open {
         height: 42px;
     }
 }
+
+.meeting-link {
+    margin-top: 14px;
+}

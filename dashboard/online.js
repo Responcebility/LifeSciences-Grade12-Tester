@@ -41,8 +41,10 @@ function platformLabel(session) {
     }
 }
 
-// Opens the meeting in a new tab. The tab is opened straight away (inside the click)
-// so pop-up blockers allow it, then pointed at the room once we know the address.
+// Opens the meeting in a new tab, so PowerPrep stays open in this one for after the lesson.
+// The tab is opened straight away (inside the click) so pop-up blockers allow it, then pointed at
+// the room once we know the address. If the browser still blocks it, we never leave the app:
+// a dialog offers a link to tap instead, which opens a new tab because the tap is the user's own.
 function openMeeting(urlOrPromise) {
     const tab = window.open('', '_blank');
     Promise.resolve(urlOrPromise).then(url => {
@@ -50,13 +52,28 @@ function openMeeting(urlOrPromise) {
             tab?.close();
             return;
         }
-        if (tab) {
+        if (tab && !tab.closed) {
             tab.opener = null;
             tab.location.href = url;
         } else {
-            window.location.href = url;
+            offerMeetingLink(url);
         }
     }).catch(() => tab?.close());
+}
+
+function offerMeetingLink(url) {
+    const body = document.createElement('div');
+    body.innerHTML = `
+        <p>Your browser blocked the new tab. Tap below to open the meeting in a new tab; PowerPrep stays open here.</p>
+        <a class="btn btn-primary btn-block meeting-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-video"></i> Open the meeting
+        </a>`;
+    const done = showDialog({ title: 'Open your meeting', body, confirmText: 'Close' });
+    // Opening the link is all the dialog is for, so it closes itself afterwards
+    body.querySelector('.meeting-link').addEventListener('click', () => {
+        setTimeout(() => document.querySelector('.dialog-backdrop [data-action="confirm"]')?.click(), 0);
+    });
+    return done;
 }
 
 // === Teacher: Online classes tab ===

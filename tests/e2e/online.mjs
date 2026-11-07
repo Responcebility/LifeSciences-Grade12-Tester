@@ -107,6 +107,24 @@ const before = opened.length;
 await page.click('[data-join-session]');
 await page.waitForTimeout(1500);
 step('learner opened: ' + (opened.slice(before).join(', ') || 'none'));
+if (!page.url().includes('/dashboard/')) problems.push('joining a meeting navigated away from PowerPrep: ' + page.url());
+
+// A browser that blocks the new tab gets a link to tap; PowerPrep itself never leaves the page
+await page.evaluate(() => { window.open = () => null; });
+const beforeBlocked = opened.length;
+await page.click('[data-join-session]');
+await page.waitForSelector('.meeting-link');
+const link = await page.$eval('.meeting-link', a => ({ href: a.href, target: a.target }));
+if (link.target !== '_blank' || !link.href.includes('meet.jit.si')) problems.push('blocked pop-up: meeting link should open the room in a new tab, got ' + JSON.stringify(link));
+if (!page.url().includes('/dashboard/')) problems.push('blocked pop-up navigated away from PowerPrep: ' + page.url());
+await page.waitForTimeout(600);
+// Screenshot only: the contrast audit reads the dialog's fade-in animation as transparent text
+await page.screenshot({ path: path.join(OUT, 'o03b-popup-blocked.png') });
+await page.click('.meeting-link');
+await page.waitForTimeout(1200);
+if (opened.length <= beforeBlocked) problems.push('blocked pop-up: tapping the link did not open a new tab');
+if (await page.isVisible('.meeting-link')) problems.push('blocked pop-up: dialog stayed open after opening the meeting');
+step('pop-up blocked: link offered, meeting opened in a new tab, app still on ' + new URL(page.url()).pathname);
 
 // 3. Teacher checks attendance, then ends the class
 await as(teacher, 'classes');
