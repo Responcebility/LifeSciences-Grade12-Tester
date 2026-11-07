@@ -1,0 +1,19 @@
+{
+  "name": "powerprep-tests",
+  "private": true,
+  "type": "module",
+  "description": "Automated browser journeys, accessibility audit and security-rule tests for PowerPrep",
+  "scripts": {
+    "setup": "npx playwright install chromium",
+    "test:e2e": "node e2e/learner.mjs && node e2e/school.mjs && node e2e/online.mjs",
+    "test:e2e:dark": "cross-env THEME=dark npm run test:e2e",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-powerprep \"node rules/rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "cross-env": "^7.0.3",
+    "firebase": "^11.10.0",
+    "firebase-tools": "^15.2.1",
+    "playwright": "^1.57.0"
+  }
+}

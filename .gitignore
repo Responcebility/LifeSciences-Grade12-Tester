@@ -4,3 +4,4 @@ service-account*.json
 
 node_modules/
 firestore-debug.log
+tests/e2e/screenshots/

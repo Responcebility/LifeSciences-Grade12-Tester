@@ -1,140 +1,220 @@
-# 🧬 PowerPrep: Grade 12 Life Sciences Practice
+# 🧬 PowerPrep: Grade 12 Life Sciences exam prep
 
-**Live demo:** [life-sciences-grade12-tester.vercel.app](https://life-sciences-grade12-tester.vercel.app)
+**Timed, exam-style practice for South African matric learners, with teacher classes, set tests and live online lessons.**
 
-A web app where Grade 12 Life Sciences learners practise exam-style questions, review every answer with an explanation, and see which topics need more work. Built with vanilla JavaScript and Firebase.
+[![Live demo](https://img.shields.io/badge/Live_demo-life--sciences--grade12--tester.vercel.app-1d4ed8?style=for-the-badge&logo=vercel)](https://life-sciences-grade12-tester.vercel.app)
 
----
+![JavaScript](https://img.shields.io/badge/Vanilla_JS-ES_modules-f7df1e?logo=javascript&logoColor=black)
+![Firebase](https://img.shields.io/badge/Firebase-Auth_%2B_Firestore-ffca28?logo=firebase&logoColor=black)
+![Security rules](https://img.shields.io/badge/Firestore_rules-56_tests-2ea44f)
+![E2E](https://img.shields.io/badge/Playwright-3_user_journeys-2ead33?logo=playwright)
+![Accessibility](https://img.shields.io/badge/WCAG_AA-contrast_audited-0b1f4d)
 
-## 🎯 Problem
-
-Grade 12 learners often struggle with:
-- Knowing which topics to focus on
-- Practising exam-style questions under time pressure
-- Tracking whether they are improving
-
-## ✨ Features
-
-### Practice
-- Timed practice papers, 10-question mixed tests and topic practice
-- Question navigator with flagging, keyboard shortcuts (A–D, ←/→, F) and a confirm step before submitting
-- Unfinished tests are saved in the browser and can be resumed later
-
-### Feedback
-- Results page with score, topic breakdown and a recommendation
-- Review every question with the correct answer and an explanation; filter by incorrect or unanswered
-- Any past test can be reviewed again from the history
-
-### Progress
-- Running totals per learner: tests completed, average score, accuracy and questions correct
-- Topic mastery and a "focus area" calculated from every answer the learner has given
-- Score history chart and a daily practice streak
-
-### Accounts
-- Email/password and Google sign-in (Firebase Authentication)
-- Password reset by email and a "keep me logged in" option
-- Light and dark mode
-
-### Schools (optional)
-- **Learners** practise on their own as before, and can join a teacher's class with a 6-character code (and leave it at any time)
-- **Teachers** create classes, see each learner's scores and the class's weakest topics, and set tests with due dates
-- **Online classes**: teachers go live or schedule a class in a free video room (Jitsi) or with their own Google Meet / Zoom / Teams link; learners see **Live now – Join** on Home and their attendance is recorded
-- **Admin** approves teacher requests, sees all accounts and manages the question bank from inside the app
+![PowerPrep learner dashboard](docs/screenshots/learner-home.png)
 
 ---
 
-## 👥 Roles and the first admin
+## ⚡ Try it in 30 seconds
 
-Roles live in the `roles` collection (`roles/{uid}` → `{ role: "admin" }` or `{ role: "teacher" }`). The security rules only let an admin change it, so the **first admin has to be added by hand**:
+Open **[life-sciences-grade12-tester.vercel.app](https://life-sciences-grade12-tester.vercel.app)**, click **Log in** and use a demo account. The data is seeded and shared, so please be kind to it.
 
-1. Sign up in the app with the account that should be admin.
-2. In the Firebase console, open **Authentication → Users** and copy that account's **User UID**.
-3. Open **Firestore Database**, create a collection called `roles`, add a document whose ID is that UID, and give it a string field `role` with the value `admin`.
-4. Reload the app: an **Admin** item appears in the menu.
+| Explore as | Email | Password | What to look at |
+|---|---|---|---|
+| 🎓 **Learner** | `learner4@example.com` | `123456` | Home → **Online classes** and **Set by your teacher** · start a test, flag a question, **Save & exit**, then resume · results → **Review answers** · **Progress** charts |
+| 👩‍🏫 **Teacher** | `teacher2@example.com` | `123456` | **Classes → Open class** → learners table, **Topic insights**, **Set tests**, **Online classes** (go live or schedule) |
+| 🛡️ **Admin** | *not public* | | See the [admin screenshot](#-admin) below |
 
-Teachers ask for access on their **Classes** page; approve them from **Admin → Teachers**. To edit questions in the app, open **Admin → Question bank** and press **Import** once; after that the app reads questions from Firestore instead of `questions.js`.
+> Tip: toggle 🌙 dark mode in the sidebar, and try it on your phone.
 
 ---
 
-## 🌱 Demo accounts (seed script)
+## 🎯 The problem
 
-`scripts/seed.mjs` creates demo accounts and sample data in your Firebase project: an admin, two teachers with a class each, six learners with test history, set tests and one pending teacher request.
+Grade 12 learners often don't know **which topics are costing them marks**, and teachers have little visibility into where a class is struggling between tests. PowerPrep turns every answered question into data. Learners see their weakest topic and get one-tap practice for it, and teachers see the same insight across their whole class.
 
-1. Firebase console → **Project settings → Service accounts → Generate new private key**. Save the file as `service-account.json` in the project root (it is git-ignored; never share or commit it).
-2. Make sure **Authentication → Sign-in method → Email/Password** is enabled.
-3. Run:
-   ```bash
-   cd scripts
-   npm install
-   node seed.mjs --key ../service-account.json
-   ```
+## ✨ What it does
 
-| Role | Email | Password |
+### 🎓 Learners
+- **Timed tests**: two exam-style practice papers (following the DBE Paper 1 / Paper 2 topic split), quick 10-question mixed tests, or one topic at a time
+- **Test tools**: a **question navigator** with flagging, keyboard shortcuts (`A`–`D`, `←`/`→`, `F`) and a submit check that warns about unanswered and flagged questions
+- **Pause and resume**: leaving a test or refreshing the page keeps the answers and the timer
+- **Results and review**: score, topic breakdown and a recommendation, then every question with the correct answer and an explanation (filter by incorrect or unanswered)
+- **Progress**: per-topic mastery, a "focus area", a score history chart and a daily streak, all calculated from real answers
+- **Classes**: join a teacher's class with a 6-character code (and leave any time); set tests and online lessons appear on Home
+
+### 👩‍🏫 Teachers
+- **Classes**: create classes with **join codes**, and see each learner's tests, average, accuracy, last test and weakest topic
+- **Topic insights**: how the whole class does per topic, weakest topics first
+- **Set tests**: a paper, a topic or a mixed set, with due dates; see who has completed it and their best score
+- **Online classes**: go live instantly or schedule a lesson, in a free video room (Jitsi) or with the teacher's own Google Meet / Zoom / Teams link. Learners get a **Live now → Join** button and attendance is recorded.
+
+### 🛡️ Admin
+- **Teacher requests**: approve or decline requests for teacher access, and revoke it later
+- **Accounts**: see every account with its activity
+- **Question bank**: import, add, edit and hide questions in the app, with validation
+
+---
+
+## 📸 Screenshots
+
+| Test in progress | Answer review |
+|---|---|
+| ![Timed test with question navigator](docs/screenshots/learner-test.png) | ![Answer review with explanations](docs/screenshots/learner-review.png) |
+
+| Results | Progress |
+|---|---|
+| ![Results with topic breakdown](docs/screenshots/learner-results.png) | ![Progress charts](docs/screenshots/learner-progress.png) |
+
+| Teacher: class overview | Teacher: online classes |
+|---|---|
+| ![Teacher class with learner stats](docs/screenshots/teacher-class.png) | ![Scheduling and hosting online classes](docs/screenshots/teacher-online-classes.png) |
+
+#### 🛡 Admin
+![Admin overview with teacher requests](docs/screenshots/admin-overview.png)
+
+| Landing page | Dark mode | Phone |
 |---|---|---|
-| Admin | admin@example.com | 123456 |
-| Teacher | teacher1@example.com (class code `LS2BZA`) | 123456 |
-| Teacher | teacher2@example.com (class code `LS2CZA`) | 123456 |
-| Learners | learner1@example.com … learner6@example.com | 123456 |
+| ![Landing page](docs/screenshots/landing.png) | ![Dark mode](docs/screenshots/learner-home-dark.png) | <img src="docs/screenshots/mobile-home.png" alt="Phone layout" width="220"> |
 
-The script can be run again safely; it updates the same accounts. These are test accounts: before a real pilot, run it with `--admin-password "<a strong password>"` or delete them.
+---
 
-## 🛠 Tech stack
+## 🛠 Engineering highlights
 
-- HTML, CSS, JavaScript (ES modules, no build step)
-- Firebase Authentication and Cloud Firestore
-- Chart.js for charts
-- Vercel hosting
+**Security is enforced in the database, not the UI.**
+- Learner, teacher and admin roles are enforced by [Firestore security rules](firestore.rules).
+- Learners can only touch their own data, teachers only see learners who joined *their* classes, only admins can grant roles or change questions, and saved results can't be edited.
+- The rules are covered by **[56 allow/deny tests](tests/rules/rules.test.mjs)** run against the Firestore emulator, and were checked again against the live project with the demo accounts.
+
+**The data model is built for cheap reads.**
+- Each learner's running totals and per-topic stats are kept with atomic `increment()` writes, so dashboards never re-add up the history, and two open tabs can't overwrite each other.
+- Class progress is mirrored into the class roster, so a teacher's view is a single collection read and never needs access to a learner's private profile.
+
+**The test engine doesn't lose work.**
+- Unfinished tests are saved locally after every answer, and resume after leaving the page or refreshing.
+- Answer options are shuffled on every attempt with a [Fisher–Yates](dashboard/questions.js) shuffle. Answers are stored against the original option order, so scoring, review and old results stay correct.
+
+**No framework and no build step.**
+- Plain ES modules (about 20 files), deployed as static files on Vercel.
+- A small shared design system ([`shared/theme.css`](shared/theme.css)) drives light and dark mode with CSS custom properties.
+- The illustrations are hand-drawn SVG.
+
+**It's accessible and tested.**
+- Three **[Playwright journeys](tests/e2e)** cover the learner, school and online-class flows end to end, against an in-memory Firebase fake.
+- Every screen they visit goes through an **automated WCAG AA contrast audit** in light *and* dark mode (0 issues), plus a check for sideways scrolling on a phone-sized screen.
+
+---
+
+## 🏗 Architecture
+
+```mermaid
+flowchart LR
+    subgraph Browser["Browser (static site on Vercel)"]
+        L[Landing / Auth]
+        D[Dashboard<br/>learner · teacher · admin]
+        R[Review page]
+    end
+    subgraph Firebase
+        A[(Firebase Auth<br/>email + Google)]
+        S{{Security rules<br/>roles · ownership}}
+        F[(Cloud Firestore<br/>africa-south1)]
+    end
+    J[Jitsi / Meet / Zoom<br/>video rooms]
+
+    L --> A
+    D --> A
+    D -- reads / writes --> S --> F
+    R --> S
+    D -- opens --> J
+```
+
+| Collection | Holds | Who can read / write |
+|---|---|---|
+| `users/{uid}` | Profile, running totals, per-topic stats, class IDs | The learner · admins can read |
+| `testResults/{id}` | One finished test with every answer | The owner · admins can read · never editable |
+| `roles/{uid}` | `admin` or `teacher` | The owner can read · only admins write |
+| `classes/{id}` with `members`, `assignments`, `sessions` | The class, its roster with progress, set tests and submissions, online classes and attendance | The class teacher · members see what applies to them |
+| `classCodes/{code}` | Join code → class | Look up one code; can't be listed |
+| `questions/{id}` | The question bank (once imported) | Everyone signed in reads · admins write |
+
+---
+
+## 🧰 Tech stack
+
+- **Frontend:** HTML, CSS (custom properties, grid), JavaScript ES modules, Chart.js, Font Awesome
+- **Backend:** Firebase Authentication, Cloud Firestore, Firestore security rules
+- **Testing:** Playwright, Firebase rules-unit-testing with the emulator, a custom contrast audit
+- **Hosting and tooling:** Vercel, Firebase CLI, Git and GitHub
 
 ## 📁 Project structure
 
 ```
-index.html              Landing page
-shared/                 Design system (theme.css) and UI helpers (ui.js)
-auth/                   Login, sign-up and Firebase config
+index.html                 Landing page
+shared/                    Design system (theme.css) and UI helpers (ui.js)
+assets/                    SVG illustration and doodle patterns
+auth/                      Login, sign-up, Firebase config
 dashboard/
-  index.html            Dashboard, test and results screens
-  dashboard.js          Page logic and the test flow
-  data.js               Firestore reads and writes (profile, results)
-  school-data.js        Roles, classes, set tests and admin data
-  classes.js            Classes page (learners and teachers)
-  online.js             Online (live video) classes
-  admin.js              Admin page
-  progress.js           Charts
-  questions.js          Question bank, paper list and topic list
-  review-answers.*      Answer review page
-firestore.rules         Security rules
-firestore.indexes.json  Index needed by the history queries
+  index.html               Dashboard shell: home, papers, topics, progress, classes, admin, test, results
+  dashboard.js             Routing, test engine, results
+  data.js                  Profile and results (Firestore)
+  school-data.js           Roles, classes, set tests, online classes, admin data
+  classes.js · online.js   Classes page and online classes
+  admin.js                 Admin page
+  progress.js              Charts
+  questions.js             Question bank, papers and topics
+  review-answers.*         Answer review page
+firestore.rules            Security rules
+tests/
+  e2e/                     Playwright journeys, contrast audit, Firebase fake
+  rules/                   Security-rule tests (Firestore emulator)
+scripts/seed.mjs           Seeds demo accounts and data (Admin SDK)
 ```
 
-## 📦 Data
+---
 
-- Questions live in `dashboard/questions.js`. They are **exam-style practice questions** written for this app, not reproductions of official DBE papers.
-- Practice Papers 1 and 2 follow the DBE split of topics between the two papers; the mixed sets draw from the whole syllabus.
-- Answer options are shuffled in every test; answers are stored against the original option order.
-- To add a paper, add its questions under a new key in `QUESTION_DATABASE` and list it in `PAPER_DEFINITIONS` (or add questions from Admin → Question bank).
-- `users/{uid}` holds each learner's running totals and per-topic stats; `testResults` holds one document per finished test.
+## 🚀 Run it locally
 
-## 🔐 Security
-
-- The Firebase web config in `auth/firebase-config.js` is public by design; access is controlled by `firestore.rules`.
-- Learners can only read and write their own profile and results, and results can't be edited after they are saved.
-- Teachers only see learners who joined their own classes, and only the progress summary stored in the class.
-- Only admins can give out roles or change the question bank.
-- Deploy the rules and index with the Firebase CLI: `firebase deploy --only firestore`
-
-## 🚀 Run locally
-
-ES modules need to be served over HTTP (opening the file directly won't work):
+ES modules need to be served over HTTP:
 
 ```bash
 git clone https://github.com/Responcebility/LifeSciences-Grade12-Tester.git
 cd LifeSciences-Grade12-Tester
-npx serve .
+npx serve .            # or: python -m http.server 5500
 ```
 
-Then open the URL it prints. Add `localhost` to **Authorized domains** in the Firebase console if sign-in is blocked.
+The app talks to the hosted Firebase project, so the demo accounts above work locally too.
+
+### Tests
+
+```bash
+cd tests
+npm install
+npm run setup          # downloads Playwright's Chromium once
+npm run test:e2e       # 3 user journeys + contrast audit (THEME=dark for dark mode)
+npm run test:rules     # 56 security-rule tests in the Firestore emulator (needs Java 21+)
+```
+
+### Your own Firebase project
+
+1. Create a project, enable **Email/Password** (and optionally **Google**) sign-in, and create a Firestore database.
+2. Put your web config in [`auth/firebase-config.js`](auth/firebase-config.js) and your project ID in `.firebaserc`.
+3. Deploy the rules and indexes: `firebase deploy --only firestore`
+4. Seed demo data with [`scripts/seed.mjs`](scripts/seed.mjs) (needs a service account key, which is git-ignored). Or create the first admin by adding `roles/{yourUid} = { role: "admin" }` in the Firestore console.
+
+---
+
+## 🗺 Roadmap
+
+- Video embedded inside the app (Jitsi as a Service or Daily) instead of a new tab
+- Structured and diagram questions with marking memos, alongside multiple choice
+- Spaced repetition of questions a learner got wrong
+- Offline support as an installable PWA, for learners with limited data
+
+## 📌 Notes
+
+- The questions are **exam-style practice questions written for this app**, not reproductions of official DBE papers.
+- The demo accounts use a simple shared password on purpose; a real deployment should use strong passwords and remove them.
 
 ## 👨‍💻 Author
 
-**Responcebility**
-Computer Science student · aspiring software and web developer
+**Responcebility** ([@Responcebility](https://github.com/Responcebility)): Computer Science student building practical, learner-centred software.
+Portfolio: **[responcebility-digital-potfolio.vercel.app](https://responcebility-digital-potfolio.vercel.app)**
