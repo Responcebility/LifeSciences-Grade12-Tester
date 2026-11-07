@@ -2902,3 +2902,8 @@ select.input {
     .history-table .cell-action { grid-column: 2; grid-row: 2 / span 3; align-self: center; }
     .history-table td[colspan] { grid-column: 1 / -1; }
 }
+
+.official-hint i {
+    color: var(--primary);
+    margin-right: 6px;
+}

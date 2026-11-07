@@ -23,6 +23,7 @@ export function renderOfficialPapers(app) {
             <div>
                 <h2 class="section-title official-title">Official NSC past papers</h2>
                 <p class="muted-note">Real Department of Basic Education papers and memos, ${PAST_PAPERS[PAST_PAPERS.length - 1].year}–${PAST_PAPERS[0].year}. Write the paper, mark it with the memo, then record your marks to track your progress.</p>
+                <p class="muted-note official-hint"><i class="fas fa-circle-info"></i> The files open from the DBE website. If one won't open, that website may be temporarily down; try again later.</p>
             </div>
             <div class="filter-bar" role="tablist" aria-label="Exam session">
                 ${[['all', 'All'], ['nov', 'November'], ['mayjune', 'May/June']].map(([v, l]) =>
