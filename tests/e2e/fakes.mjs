@@ -5,7 +5,7 @@ export const APP = `export function initializeApp() { return {}; }`;
 export const AUTH = `
 const listeners = [];
 const auth = { currentUser: null };
-function loadUser() { try { return JSON.parse(localStorage.getItem('__fakeUser')); } catch (e) { return null; } }
+function loadUser() { try { const u = JSON.parse(localStorage.getItem('__fakeUser')); return u && { ...u, getIdToken: async () => 'fake-id-token' }; } catch (e) { return null; } }
 export function getAuth() { auth.currentUser = loadUser(); return auth; }
 export function onAuthStateChanged(a, cb) { listeners.push(cb); setTimeout(() => cb(loadUser()), 0); return () => {}; }
 function setUser(u) { localStorage.setItem('__fakeUser', JSON.stringify(u)); auth.currentUser = u; listeners.forEach(cb => cb(u)); }

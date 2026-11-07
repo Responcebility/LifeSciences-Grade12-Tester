@@ -36,9 +36,11 @@ import {
 import { renderClasses } from './classes.js';
 import { renderAdmin } from './admin.js';
 import { renderHomeSessions } from './online.js';
+import { renderOfficialPapers } from './official-papers.js';
+import { renderNotes } from './notes.js';
 import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle, daysUntil, dueLabel } from '../shared/ui.js';
 
-const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'classes', 'guide', 'admin'];
+const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'classes', 'notes', 'guide', 'admin'];
 const TONES = ['tone-blue', 'tone-yellow', 'tone-green', 'tone-sky', 'tone-orange'];
 const STUDY_TIPS = [
     'Small, steady practice beats last-minute cramming.',
@@ -77,6 +79,8 @@ const app = {
     get user() { return user; },
     get profile() { return profile; },
     get role() { return role; },
+    get results() { return results; },
+    recordSelfMarked,
     navigate,
     refresh: () => refreshData(),
     reloadQuestions,
@@ -142,6 +146,7 @@ async function refreshData() {
     renderHomeAssignments();
     renderHomeSessions(app);
     const page = currentPage();
+    if (page === 'papers') renderOfficialPapers(app);
     if (page === 'classes') renderClasses(app);
     if (page === 'admin') renderAdmin(app);
 }
@@ -260,6 +265,8 @@ function showPage(page) {
     if (page === 'progress') renderCharts();
     if (page === 'classes') renderClasses(app);
     if (page === 'admin') renderAdmin(app);
+    if (page === 'papers') renderOfficialPapers(app);
+    if (page === 'notes') renderNotes(app);
 }
 
 // === Home page ===
@@ -890,6 +897,21 @@ async function submitTest({ timeUp = false } = {}) {
     }
     renderSaveState();
     refreshData();
+}
+
+// An official DBE paper the learner wrote on paper and marked against the memo
+async function recordSelfMarked(marked) {
+    const result = {
+        ...marked,
+        correctCount: 0,
+        questionKeys: [],
+        answers: [],
+        topicStats: {},
+        weakestTopic: 'None'
+    };
+    await saveTestResult(user, result);
+    if (profile?.classIds?.length) await syncClassProgress(user, profile.classIds, result);
+    await refreshData();
 }
 
 function scoreTest(test) {

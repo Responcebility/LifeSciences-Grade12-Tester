@@ -68,6 +68,8 @@ export async function saveTestResult(user, result) {
         topicStats: result.topicStats,
         questionKeys: result.questionKeys,
         answers: result.answers.map(a => (a === null ? -1 : a)),
+        // Official papers marked by the learner against the DBE memo
+        ...(result.sections ? { selfMarked: true, sections: result.sections } : {}),
         timestamp: serverTimestamp()
     });
 

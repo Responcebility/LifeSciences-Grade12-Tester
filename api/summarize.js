@@ -6,7 +6,7 @@ const FIREBASE_API_KEY = 'AIzaSyBwHBS58hi7UWhqbtgTYvRYkJVN-Qhu6S0';   // public 
 const PROJECT = 'lifescience-grade12';
 const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT || 10);
 const MAX_CHARS = 40000;
-const DEFAULT_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const DEFAULT_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const ALLOWED_ORIGINS = [
     'https://life-sciences-grade12-tester.vercel.app',
     'http://localhost:5500',
