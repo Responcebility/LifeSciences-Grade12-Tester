@@ -28,7 +28,7 @@
 }
 
 .site-links a {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 600;
     font-size: 14px;
@@ -103,7 +103,7 @@
 
 .hero-lead {
     font-size: 18px;
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.9);
     max-width: 540px;
 }
 
@@ -121,7 +121,7 @@
     gap: 8px 20px;
     margin-top: 24px;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-ticks i {
@@ -388,7 +388,7 @@
 }
 
 .cta-band p {
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.9);
     margin-top: 6px;
 }
 
@@ -438,7 +438,7 @@
 }
 
 .auth-art-body > p {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     margin: 12px 0 8px;
     font-size: 16px;
     max-width: 440px;
@@ -480,7 +480,7 @@
 
 .auth-art-foot {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .auth-art-foot i {

@@ -8,7 +8,7 @@
     --border-strong: #c8d4ea;
     --text: #0e1b3d;
     --text-2: #45537a;
-    --text-3: #7584a8;
+    --text-3: #5b6889;
 
     --primary: #1d4ed8;
     --primary-hover: #1e40af;
@@ -24,14 +24,14 @@
     --sky: #0ea5e9;
     --sky-soft: #e0f4fd;
 
-    --success: #15803d;
+    --success: #166534;
     --success-soft: #e5f6ea;
     --warning: #b45309;
     --warning-soft: #fdf1df;
     --danger: #c9302c;
     --danger-soft: #fcebea;
 
-    --hero-gradient: linear-gradient(135deg, #0b1f4d 0%, #1740a8 55%, #2563eb 100%);
+    --hero-gradient: linear-gradient(135deg, #0b1f4d 0%, #1740a8 55%, #1d4ed8 100%);
     --pattern-on-dark: url("../assets/pattern-light.svg");
     --pattern-on-light: url("../assets/pattern-blue.svg");
 
@@ -56,7 +56,7 @@
         --border-strong: #2c3f70;
         --text: #e9effd;
         --text-2: #a9b7d9;
-        --text-3: #7787ad;
+        --text-3: #95a3c6;
         --primary: #60a5fa;
         --primary-hover: #93c5fd;
         --primary-soft: rgba(96, 165, 250, 0.14);
@@ -88,7 +88,7 @@
     --border-strong: #2c3f70;
     --text: #e9effd;
     --text-2: #a9b7d9;
-    --text-3: #7787ad;
+    --text-3: #95a3c6;
     --primary: #60a5fa;
     --primary-hover: #93c5fd;
     --primary-soft: rgba(96, 165, 250, 0.14);

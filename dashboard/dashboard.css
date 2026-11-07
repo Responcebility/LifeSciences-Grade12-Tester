@@ -70,7 +70,7 @@ body {
     gap: 12px;
     padding: 11px 14px;
     border-radius: 12px;
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 600;
     transition: background-color 0.15s, color 0.15s;
@@ -150,7 +150,7 @@ body {
 
 .user-meta span {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.9);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -290,7 +290,7 @@ body {
 .welcome-date {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .welcome-banner h1 {
@@ -300,7 +300,7 @@ body {
 }
 
 .welcome-quote {
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.9);
     max-width: 440px;
 }
 
@@ -1459,7 +1459,7 @@ select.input {
     display: block;
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .class-code {
@@ -1548,7 +1548,7 @@ select.input {
 .class-hero-label {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .class-hero h2 {
@@ -1556,7 +1556,7 @@ select.input {
 }
 
 .class-hero-meta {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     margin-top: 4px;
 }
 
@@ -1574,7 +1574,7 @@ select.input {
 .code-box span {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .code-box strong {
@@ -1864,7 +1864,7 @@ select.input {
 }
 
 .option-editor input[type="radio"]:checked + .option-label {
-    background: var(--success);
+    background: #15803d;
     color: #ffffff;
 }
 

@@ -23,7 +23,7 @@
 
 .review-topbar .btn-ghost {
     justify-self: start;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .review-topbar .btn-ghost:hover {
@@ -186,8 +186,8 @@
 }
 
 .review-option.is-correct .option-label {
-    background: var(--success);
-    color: #fff;
+    background: #15803d;
+    color: #ffffff;
 }
 
 .review-option.is-wrong {
@@ -197,8 +197,8 @@
 }
 
 .review-option.is-wrong .option-label {
-    background: var(--danger);
-    color: #fff;
+    background: #c9302c;
+    color: #ffffff;
 }
 
 .review-tag {
