@@ -1,6 +1,6 @@
 # 🧬 PowerPrep: Grade 12 Life Sciences Practice
 
-**Live demo:** [lifesciences-grade12-tester.netlify.app](https://lifesciences-grade12-tester.netlify.app)
+**Live demo:** [life-sciences-grade12-tester.vercel.app](https://life-sciences-grade12-tester.vercel.app)
 
 A web app where Grade 12 Life Sciences learners practise exam-style questions, review every answer with an explanation, and see which topics need more work. Built with vanilla JavaScript and Firebase.
 
@@ -82,7 +82,7 @@ The script can be run again safely; it updates the same accounts. These are test
 - HTML, CSS, JavaScript (ES modules, no build step)
 - Firebase Authentication and Cloud Firestore
 - Chart.js for charts
-- Netlify hosting
+- Vercel hosting
 
 ## 📁 Project structure
 
