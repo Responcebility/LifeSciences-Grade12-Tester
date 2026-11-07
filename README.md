@@ -7,7 +7,7 @@
 ![JavaScript](https://img.shields.io/badge/Vanilla_JS-ES_modules-f7df1e?logo=javascript&logoColor=black)
 ![Firebase](https://img.shields.io/badge/Firebase-Auth_%2B_Firestore-ffca28?logo=firebase&logoColor=black)
 ![Security rules](https://img.shields.io/badge/Firestore_rules-56_tests-2ea44f)
-![E2E](https://img.shields.io/badge/Playwright-4_user_journeys-2ead33?logo=playwright)
+![E2E](https://img.shields.io/badge/Playwright-5_user_journeys-2ead33?logo=playwright)
 ![AI](https://img.shields.io/badge/AI-Groq_via_serverless-f55036)
 ![Accessibility](https://img.shields.io/badge/WCAG_AA-contrast_audited-0b1f4d)
 
@@ -27,7 +27,7 @@ Open **[life-sciences-grade12-tester.vercel.app](https://life-sciences-grade12-t
 | 👩‍🏫 **Teacher** | `teacher2@example.com` | `123456` | **Classes → Open class** → learners table, **Topic insights**, **Set tests**, **Online classes** (go live or schedule) |
 | 🛡️ **Admin** | *not public* | | See the [admin screenshot](#-admin) below |
 
-> Tip: toggle 🌙 dark mode in the sidebar, and try it on your phone.
+> Tip: toggle 🌙 dark mode in the sidebar, and open it on your phone: it installs to the home screen like an app.
 
 ---
 
@@ -47,6 +47,11 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 - **Mark it against the memo**: write the paper, mark it with the official memo and enter marks per question; the score counts towards progress, streak and the teacher's class view
 - **AI notes**: upload a PDF or text file (or paste notes) and get a revision sheet with a summary, key terms, must-know facts and exam-style questions with answers; copy it, download it, save it as a PDF, or keep it in a personal library
 - **Classes**: join a teacher's class with a 6-character code (and leave any time); set tests and online lessons appear on Home
+
+### 📱 On a phone
+- **Installs like an app**: "Install the app" adds PowerPrep to the home screen with its own icon, and it opens full screen without the browser bar (Android and desktop Chrome/Edge get the install prompt; iPhone gets the Share → Add to Home Screen steps)
+- **Built for thumbs**: a bottom tab bar (Home, Papers, Topics, Progress) with everything else in a **More** sheet, and the test's Previous / Flag / Next buttons stay at the bottom of the screen
+- **Copes with a weak connection**: pages that have been opened before still load offline, and a notice says when you're offline
 
 ### 👩‍🏫 Teachers
 - **Classes**: create classes with **join codes**, and see each learner's tests, average, accuracy, last test and weakest topic
@@ -85,9 +90,9 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 #### 🛡 Admin
 ![Admin overview with teacher requests](docs/screenshots/admin-overview.png)
 
-| Landing page | Dark mode | Phone |
-|---|---|---|
-| ![Landing page](docs/screenshots/landing.png) | ![Dark mode](docs/screenshots/learner-home-dark.png) | <img src="docs/screenshots/mobile-home.png" alt="Phone layout" width="220"> |
+| Landing page | Dark mode | Phone | Phone: More sheet |
+|---|---|---|---|
+| ![Landing page](docs/screenshots/landing.png) | ![Dark mode](docs/screenshots/learner-home-dark.png) | <img src="docs/screenshots/mobile-home.png" alt="Phone layout with bottom tabs" width="220"> | <img src="docs/screenshots/mobile-more.png" alt="More sheet on a phone" width="220"> |
 
 ---
 
@@ -124,8 +129,12 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 - A small shared design system ([`shared/theme.css`](shared/theme.css)) drives light and dark mode with CSS custom properties.
 - The illustrations are hand-drawn SVG.
 
+**A phone app without an app store.**
+- A [web app manifest](manifest.webmanifest) with standard and maskable icons makes it installable, and a [service worker](sw.js) keeps a copy of the app.
+- Pages and code are fetched **network first**, so a new deploy reaches learners straight away; the saved copy is only used when the network fails. Firebase data, sign-in and the AI endpoint are never cached.
+
 **It's accessible and tested.**
-- Four **[Playwright journeys](tests/e2e)** cover the learner, school, online-class, past-paper and AI-notes flows end to end. They run against an in-memory Firebase fake that answers asynchronously like a real network, which is what caught a real save bug before it reached learners.
+- Five **[Playwright journeys](tests/e2e)** cover the learner, school, online-class, past-paper, AI-notes and phone flows end to end. The phone journey taps through every page at iPhone size, checks that buttons are big enough to tap, and checks that the app installs and opens offline. They run against an in-memory Firebase fake that answers asynchronously like a real network, which is what caught a real save bug before it reached learners.
 - A **[unit test](tests/unit/markdown.test.mjs)** covers the Markdown renderer for AI summaries, including HTML escaping.
 - Every screen they visit goes through an **automated WCAG AA contrast audit** in light *and* dark mode (0 issues), plus a check for sideways scrolling on a phone-sized screen.
 
@@ -188,8 +197,10 @@ flowchart LR
 
 ```
 index.html                 Landing page
-shared/                    Design system (theme.css) and UI helpers (ui.js)
-assets/                    SVG illustration, doodle patterns and favicon
+manifest.webmanifest       Installable app: name, icons, start page
+sw.js                      Service worker: network first, saved copy when offline
+shared/                    Design system (theme.css), UI helpers (ui.js), install and offline (pwa.js)
+assets/                    SVG illustration, doodle patterns, favicon and app icons
 api/summarize.js           Serverless function: sign-in check, daily limit, Groq call
 auth/                      Login, sign-up, Firebase config
 dashboard/
@@ -234,7 +245,7 @@ cd tests
 npm install
 npm run setup          # downloads Playwright's Chromium once
 npm run test:unit      # 8 checks of the Markdown renderer for AI summaries
-npm run test:e2e       # 4 user journeys + contrast audit (THEME=dark for dark mode)
+npm run test:e2e       # 5 user journeys (incl. phone) + contrast audit (THEME=dark for dark mode)
 npm run test:rules     # 56 core security-rule tests in the Firestore emulator (needs Java 21+)
 ```
 

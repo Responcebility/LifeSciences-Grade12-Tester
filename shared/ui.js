@@ -93,7 +93,9 @@ export function initThemeToggle(buttons, onChange) {
         const dark = currentTheme() === 'dark';
         const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
         list.forEach(button => {
-            button.innerHTML = `<i class="fas fa-${dark ? 'sun' : 'moon'}"></i>`;
+            // Buttons marked data-labelled show the mode in words next to the icon
+            button.innerHTML = `<i class="fas fa-${dark ? 'sun' : 'moon'}"></i>`
+                + ('labelled' in button.dataset ? `<span>${dark ? 'Light mode' : 'Dark mode'}</span>` : '');
             button.setAttribute('aria-label', label);
             button.title = label;
         });

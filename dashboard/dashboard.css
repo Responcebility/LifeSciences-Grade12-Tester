@@ -31,7 +31,8 @@ body {
     min-height: 100vh;
 }
 
-.app-topbar {
+.app-topbar,
+.tabbar {
     display: none;
 }
 
@@ -2581,64 +2582,39 @@ select.input {
         gap: 8px;
     }
 
+    /* Phones and small tablets: the sidebar gives way to the bottom tab bar */
     .sidebar {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: auto;
-        z-index: 50;
-        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-        background-image: none;
-        box-shadow: 0 -8px 24px rgba(6, 16, 42, 0.2);
-    }
-
-    .sidebar-brand,
-    .sidebar-footer {
         display: none;
     }
 
-    .sidebar-nav {
-        flex-direction: row;
-        justify-content: space-around;
+    .tabbar {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 2px;
-    }
-
-    .nav-item {
-        flex-direction: column;
-        gap: 3px;
-        flex: 1;
-        padding: 7px 4px;
-        font-size: 11px;
-        text-align: center;
-        border-radius: 10px;
-    }
-
-    .nav-item i {
-        font-size: 17px;
-    }
-
-    .nav-item.active::before {
-        left: 30%;
-        right: 30%;
-        top: auto;
-        bottom: -6px;
-        width: auto;
-        height: 3px;
-        border-radius: 3px 3px 0 0;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+        background: var(--navy);
+        box-shadow: 0 -8px 24px rgba(6, 16, 42, 0.2);
     }
 
     .main {
-        padding: 18px 16px 100px;
+        padding: 18px 16px calc(100px + env(safe-area-inset-bottom));
     }
 
-    .test-mode .sidebar {
+    .test-mode .tabbar {
         display: none;
     }
 
     .test-mode .main {
         padding-bottom: 32px;
+    }
+
+    .toast-region {
+        bottom: calc(84px + env(safe-area-inset-bottom));
     }
 
     .test-layout {
@@ -2661,11 +2637,6 @@ select.input {
     .online-grid,
     .notes-grid {
         grid-template-columns: 1fr;
-    }
-
-    /* The bottom bar has room for six items; the exam guide is linked from the Papers page */
-    .nav-secondary {
-        display: none;
     }
 
     .filter-row {
@@ -2772,6 +2743,25 @@ select.input {
 
     .question-nav .btn {
         flex: 1;
+        min-height: 48px;
+    }
+
+    /* Previous / Flag / Next stay within thumb reach at the bottom of the screen */
+    .question-card {
+        overflow: visible;
+        padding-bottom: 0;
+    }
+
+    .question-nav {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        margin: 0 -16px 0 -30px;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 30px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        box-shadow: 0 -12px 18px -16px rgba(14, 27, 61, 0.4);
     }
 
     .results-hero {
@@ -2840,13 +2830,17 @@ select.input {
         flex: 1;
     }
 
+    /* Four tabs don't fit in one row on a phone, so they wrap into a 2 x 2 grid instead of scrolling out of sight */
     .tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
+        overflow: visible;
     }
 
     .tab {
-        flex: 1;
         justify-content: center;
+        min-height: 42px;
         padding: 9px 10px;
     }
 
@@ -2912,4 +2906,205 @@ select.input {
     flex-basis: 100%;
     font-size: 12px;
     color: var(--text-3);
+}
+
+/* === Phone navigation: tab bar and More sheet === */
+.tab-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 52px;
+    padding: 6px 2px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tab-item i {
+    font-size: 18px;
+}
+
+.tab-item.active,
+.tab-item[aria-expanded="true"] {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.tab-item.active i,
+.tab-item[aria-expanded="true"] i {
+    color: var(--accent);
+}
+
+.tab-item.active::after {
+    content: "";
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    bottom: -6px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--accent);
+}
+
+.sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(6, 16, 42, 0.5);
+    animation: fade 0.15s ease;
+}
+
+.sheet {
+    width: 100%;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    /* Sits above the tab bar, which stays visible so More can close the sheet again */
+    margin-bottom: calc(64px + env(safe-area-inset-bottom));
+    padding: 10px 16px 18px;
+    background: var(--surface);
+    border-radius: 22px 22px 0 0;
+    box-shadow: var(--shadow-lg);
+    animation: sheet-up 0.2s ease;
+}
+
+@keyframes sheet-up {
+    from { opacity: 0; transform: translateY(32px); }
+}
+
+.sheet-handle {
+    align-self: center;
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--border-strong);
+}
+
+.sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sheet .user-meta strong {
+    color: var(--text);
+}
+
+.sheet .user-meta span {
+    color: var(--text-3);
+}
+
+.sheet-head .icon-btn {
+    width: 44px;
+    height: 44px;
+}
+
+.sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 62px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sheet-item.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.sheet-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.install-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px dashed var(--primary);
+    border-radius: 14px;
+    background: var(--primary-soft);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.install-copy {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.install-copy small {
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.install-card > .fa-chevron-right {
+    color: var(--primary);
+}
+
+.sheet-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sheet-actions .btn {
+    width: 100%;
+    min-height: 46px;
+}
+
+body.sheet-open {
+    overflow: hidden;
+}
+
+/* === Touch screens: fingertip-sized controls === */
+@media (pointer: coarse) {
+    .btn-sm {
+        min-height: 40px;
+        padding: 0 14px;
+    }
+
+    .icon-btn {
+        width: 42px;
+        height: 42px;
+    }
 }

@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#0b1f4d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PowerPrep">
     <title>Dashboard | PowerPrep</title>
     <script>try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +34,7 @@
             </div>
         </header>
 
-        <!-- Sidebar (bottom tab bar on phones) -->
+        <!-- Sidebar (desktop and tablets) -->
         <aside class="sidebar on-dark">
             <a href="#home" class="brand sidebar-brand">
                 <span class="brand-mark"><i class="fas fa-dna"></i></span>
@@ -43,7 +49,7 @@
                 <a href="#classes" class="nav-item" data-page="classes"><i class="fas fa-users"></i><span>Classes</span></a>
                 <a href="#notes" class="nav-item" data-page="notes"><i class="fas fa-wand-magic-sparkles"></i><span>AI notes</span></a>
                 <a href="#guide" class="nav-item nav-secondary" data-page="guide"><i class="far fa-circle-question"></i><span>Exam guide</span></a>
-                <a href="#admin" class="nav-item" data-page="admin" id="nav-admin" hidden><i class="fas fa-shield-halved"></i><span>Admin</span></a>
+                <a href="#admin" class="nav-item admin-only" data-page="admin" id="nav-admin" hidden><i class="fas fa-shield-halved"></i><span>Admin</span></a>
             </nav>
 
             <div class="sidebar-footer">
@@ -60,6 +66,47 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Phones: bottom tab bar, with the rest of the pages in the More sheet -->
+        <nav class="tabbar" aria-label="Main">
+            <a href="#home" class="tab-item" data-page="home"><i class="fas fa-house"></i><span>Home</span></a>
+            <a href="#papers" class="tab-item" data-page="papers"><i class="far fa-file-lines"></i><span>Papers</span></a>
+            <a href="#topics" class="tab-item" data-page="topics"><i class="fas fa-layer-group"></i><span>Topics</span></a>
+            <a href="#progress" class="tab-item" data-page="progress"><i class="fas fa-chart-simple"></i><span>Progress</span></a>
+            <button type="button" class="tab-item" id="more-button" aria-haspopup="dialog" aria-expanded="false" aria-controls="more-sheet"><i class="fas fa-grip"></i><span>More</span></button>
+        </nav>
+
+        <div class="sheet-backdrop" id="more-sheet" hidden>
+            <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="more-title">
+                <span class="sheet-handle" aria-hidden="true"></span>
+                <div class="sheet-head">
+                    <div class="user-chip">
+                        <span class="avatar" id="more-initial">S</span>
+                        <div class="user-meta">
+                            <strong id="more-name">Loading…</strong>
+                            <span id="more-email"></span>
+                        </div>
+                    </div>
+                    <button type="button" class="icon-btn" id="more-close" aria-label="Close menu"><i class="fas fa-xmark"></i></button>
+                </div>
+                <h2 id="more-title" class="sr-only">More</h2>
+                <nav class="sheet-grid" aria-label="More pages">
+                    <a href="#classes" class="sheet-item" data-page="classes"><span class="sheet-icon tone-blue"><i class="fas fa-users"></i></span><span>Classes</span></a>
+                    <a href="#notes" class="sheet-item" data-page="notes"><span class="sheet-icon tone-yellow"><i class="fas fa-wand-magic-sparkles"></i></span><span>AI notes</span></a>
+                    <a href="#guide" class="sheet-item" data-page="guide"><span class="sheet-icon tone-green"><i class="far fa-circle-question"></i></span><span>Exam guide</span></a>
+                    <a href="#admin" class="sheet-item admin-only" data-page="admin" hidden><span class="sheet-icon tone-orange"><i class="fas fa-shield-halved"></i></span><span>Admin</span></a>
+                </nav>
+                <button type="button" class="install-card" data-install hidden>
+                    <span class="sheet-icon tone-sky"><i class="fas fa-mobile-screen-button"></i></span>
+                    <span class="install-copy"><strong>Install the app</strong><small>Open PowerPrep from your home screen, full screen.</small></span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+                <div class="sheet-actions">
+                    <button class="btn btn-secondary theme-toggle" type="button" data-labelled></button>
+                    <button class="btn btn-secondary logout-btn" type="button"><i class="fas fa-arrow-right-from-bracket"></i><span>Log out</span></button>
+                </div>
+            </div>
+        </div>
 
         <main class="main" id="main">
             <!-- Home -->
@@ -350,5 +397,6 @@
     </div>
 
     <script type="module" src="dashboard.js"></script>
+    <script type="module" src="../shared/pwa.js"></script>
 </body>
 </html>

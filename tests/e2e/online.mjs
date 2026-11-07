@@ -26,7 +26,7 @@ const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 
 const problems = [];
 const step = (m) => console.log('•', m);
 
-const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 } });
+const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1360, height: 900 } });
 if (THEME) await ctx.addInitScript((t) => { try { localStorage.setItem('theme', t); } catch (e) {} }, THEME);
 await ctx.route('https://www.gstatic.com/firebasejs/**', (route) => {
     const url = route.request().url();

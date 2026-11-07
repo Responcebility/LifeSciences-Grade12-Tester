@@ -73,7 +73,7 @@ const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 
 const problems = [];
 const step = (m) => console.log('•', m);
 
-const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 }, acceptDownloads: true });
+const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1360, height: 900 }, acceptDownloads: true });
 if (THEME) await ctx.addInitScript((t) => { try { localStorage.setItem('theme', t); } catch (e) {} }, THEME);
 await ctx.route('https://www.gstatic.com/firebasejs/**', (route) => {
     const url = route.request().url();
@@ -187,7 +187,7 @@ await page.reload();
 await page.waitForSelector('#drop-zone');
 await shot('f05-mobile-notes');
 step('mobile overflow (notes): ' + await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth));
-await page.click('.nav-item[data-page="papers"]');
+await page.click('.tab-item[data-page="papers"]');
 await page.waitForSelector('.official-card');
 await shot('f06-mobile-papers');
 step('mobile overflow (papers): ' + await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth));

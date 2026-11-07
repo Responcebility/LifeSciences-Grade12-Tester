@@ -28,7 +28,7 @@ const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 
 const problems = [];
 
 async function newPage(opts = {}) {
-    const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 }, ...opts });
+    const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1360, height: 900 }, ...opts });
     await ctx.route('https://www.gstatic.com/firebasejs/**', (route) => {
         const url = route.request().url();
         const body = url.endsWith('firebase-app.js') ? APP : url.endsWith('firebase-auth.js') ? AUTH : FIRESTORE;
@@ -228,10 +228,10 @@ await page.evaluate(() => localStorage.setItem('__fakeUser', JSON.stringify({ ui
 await page.goto(`${base}/dashboard/index.html`);
 await page.waitForTimeout(800);
 await shot(page, '17-mobile-home');
-await page.click('.nav-item[data-page="progress"]');
+await page.click('.tab-item[data-page="progress"]');
 await page.waitForTimeout(1200);
 await shot(page, '18-mobile-progress');
-await page.click('.nav-item[data-page="home"]');
+await page.click('.tab-item[data-page="home"]');
 await page.click('.quick-row[data-start="mixed"]');
 await page.waitForSelector('#test-page.active');
 await page.tap('.option >> nth=1');

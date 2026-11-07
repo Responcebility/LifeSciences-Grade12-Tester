@@ -29,7 +29,7 @@ const problems = [];
 const step = (msg) => console.log('•', msg);
 
 async function newPage(opts = {}) {
-    const ctx = await browser.newContext({ viewport: { width: 1360, height: 900 }, ...opts });
+    const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1360, height: 900 }, ...opts });
     await ctx.route('https://www.gstatic.com/firebasejs/**', (route) => {
         const url = route.request().url();
         const body = url.endsWith('firebase-app.js') ? APP : url.endsWith('firebase-auth.js') ? AUTH : FIRESTORE;

@@ -5,7 +5,7 @@
   "description": "Automated browser journeys, accessibility audit and security-rule tests for PowerPrep",
   "scripts": {
     "setup": "npx playwright install chromium",
-    "test:e2e": "node e2e/learner.mjs && node e2e/school.mjs && node e2e/online.mjs && node e2e/features.mjs",
+    "test:e2e": "node e2e/learner.mjs && node e2e/school.mjs && node e2e/online.mjs && node e2e/features.mjs && node e2e/mobile.mjs",
     "test:e2e:dark": "cross-env THEME=dark npm run test:e2e",
     "test:rules": "firebase emulators:exec --only firestore --project demo-powerprep \"node rules/rules.test.mjs\"",
     "test:unit": "node unit/markdown.test.mjs",

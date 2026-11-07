@@ -571,6 +571,51 @@ button {
     from { opacity: 0; transform: translateY(8px); }
 }
 
+/* Installable app: offline notice and install steps (shared/pwa.js) */
+.offline-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.install-steps {
+    display: grid;
+    gap: 10px;
+    padding-left: 20px;
+    color: var(--text-2);
+    line-height: 1.5;
+}
+
+.install-steps i {
+    color: var(--primary);
+}
+
+/* Touch screens: 16px text stops iPhones zooming in on a field, and fingertip-sized checkboxes */
+@media (pointer: coarse) {
+    .input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    .checkbox input {
+        width: 20px;
+        height: 20px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

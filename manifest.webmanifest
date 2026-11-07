@@ -1,0 +1,24 @@
+{
+    "id": "/dashboard/index.html",
+    "name": "PowerPrep: Life Sciences Grade 12",
+    "short_name": "PowerPrep",
+    "description": "Timed exam practice, NSC past papers, AI notes and classes for Grade 12 Life Sciences.",
+    "start_url": "/dashboard/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0b1f4d",
+    "theme_color": "#0b1f4d",
+    "categories": ["education"],
+    "lang": "en-ZA",
+    "icons": [
+        { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        { "name": "Quick 10-question test", "short_name": "Quick test", "url": "/dashboard/index.html#home", "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "Past papers", "short_name": "Papers", "url": "/dashboard/index.html#papers", "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "AI notes", "url": "/dashboard/index.html#notes", "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }] }
+    ]
+}

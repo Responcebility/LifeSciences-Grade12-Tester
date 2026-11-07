@@ -92,6 +92,9 @@ async function init() {
     document.getElementById('user-name').textContent = name || 'Learner';
     document.getElementById('user-email').textContent = user.email || '';
     document.getElementById('user-initial').textContent = (name || user.email || 'L').charAt(0).toUpperCase();
+    document.getElementById('more-name').textContent = name || 'Learner';
+    document.getElementById('more-email').textContent = user.email || '';
+    document.getElementById('more-initial').textContent = (name || user.email || 'L').charAt(0).toUpperCase();
     document.getElementById('greeting-name').textContent = firstName();
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-ZA', {
         weekday: 'long', day: 'numeric', month: 'long'
@@ -101,7 +104,7 @@ async function init() {
 
     setupEventListeners();
     role = await loadRole(user.uid);
-    document.getElementById('nav-admin').hidden = role !== 'admin';
+    document.querySelectorAll('.admin-only').forEach(el => { el.hidden = role !== 'admin'; });
     await reloadQuestions();
     renderResumeBanner();
     route();
@@ -158,6 +161,8 @@ function setupEventListeners() {
         if (currentPage() === 'progress') renderCharts();
     });
 
+    setupMoreSheet();
+
     document.querySelectorAll('.logout-btn').forEach(btn => btn.addEventListener('click', async () => {
         pauseTest();
         await signOut(auth);
@@ -196,6 +201,40 @@ function setupEventListeners() {
     setInterval(() => {
         if (currentPage() === 'home' && profile?.classIds?.length) renderHomeSessions(app);
     }, 60000);
+}
+
+// === Phone navigation: the More sheet ===
+
+const MORE_PAGES = ['classes', 'notes', 'guide', 'admin'];
+
+function setupMoreSheet() {
+    const sheet = document.getElementById('more-sheet');
+    const button = document.getElementById('more-button');
+    const open = () => {
+        sheet.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('sheet-open');
+        sheet.querySelector('.sheet-item[data-page]').focus();
+    };
+    button.addEventListener('click', () => (sheet.hidden ? open() : closeMoreSheet()));
+    document.getElementById('more-close').addEventListener('click', () => closeMoreSheet(true));
+    // Tapping outside the sheet, or on one of its pages, closes it
+    sheet.addEventListener('click', (e) => {
+        if (e.target === sheet || e.target.closest('.sheet-item')) closeMoreSheet();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !sheet.hidden) closeMoreSheet(true);
+    });
+}
+
+function closeMoreSheet(restoreFocus = false) {
+    const sheet = document.getElementById('more-sheet');
+    if (sheet.hidden) return;
+    sheet.hidden = true;
+    document.body.classList.remove('sheet-open');
+    const button = document.getElementById('more-button');
+    button.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) button.focus();
 }
 
 // === Routing (location.hash) ===
@@ -252,12 +291,15 @@ function route() {
 
 function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `${page}-page`));
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.nav-item, .tab-item[data-page], .sheet-item').forEach(item => {
         const active = item.dataset.page === page;
         item.classList.toggle('active', active);
         if (active) item.setAttribute('aria-current', 'page');
         else item.removeAttribute('aria-current');
     });
+    // On phones, pages that live in the More sheet light up the More tab
+    document.getElementById('more-button').classList.toggle('active', MORE_PAGES.includes(page));
+    closeMoreSheet();
     document.body.classList.toggle('test-mode', page === 'test');
     window.scrollTo(0, 0);
 

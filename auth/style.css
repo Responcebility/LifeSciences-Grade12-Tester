@@ -730,3 +730,47 @@
         border-radius: 20px;
     }
 }
+
+/* Touch screens: text buttons get a fingertip-sized hit area without changing how they look */
+@media (pointer: coarse) {
+    button.text-link {
+        min-height: 40px;
+        padding: 0 4px;
+    }
+}
+
+/* "Install the app" on the landing page (shown by shared/pwa.js when the browser can install it) */
+.hero-install {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    min-height: 52px;
+    padding: 8px 18px 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.hero-install:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.hero-install > i {
+    font-size: 22px;
+    color: var(--accent);
+}
+
+.hero-install span {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-install small {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
