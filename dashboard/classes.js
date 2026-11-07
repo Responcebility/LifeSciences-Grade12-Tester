@@ -18,6 +18,7 @@ import {
 } from './school-data.js';
 import { PAPERS, TOPICS, topicName, countQuestionsByTopic } from './questions.js';
 import { averageScore, weakestTopic } from './data.js';
+import { onlinePanel, bindOnline, loadClassSessions } from './online.js';
 import { escapeHtml, showDialog, showToast, todayISO, daysUntil, dueLabel } from '../shared/ui.js';
 
 const root = () => document.getElementById('classes-root');
@@ -206,9 +207,10 @@ async function renderClassDetail(app, token) {
         renderClasses(app);
         return;
     }
-    const [members, assignments] = await Promise.all([
+    const [members, assignments, sessions] = await Promise.all([
         loadMembers(cls.id).catch(() => []),
-        loadAssignments(cls.id).catch(() => [])
+        loadAssignments(cls.id).catch(() => []),
+        loadClassSessions(cls.id)
     ]);
     if (token !== renderToken) return;
 
@@ -252,12 +254,14 @@ async function renderClassDetail(app, token) {
             ${tab('learners', 'Learners', 'users')}
             ${tab('insights', 'Topic insights', 'chart-simple')}
             ${tab('assignments', 'Set tests', 'pen-to-square')}
+            ${tab('online', 'Online classes', 'video')}
         </div>
 
         <div class="tab-panel">
             ${openTab === 'learners' ? learnersPanel(members) : ''}
             ${openTab === 'insights' ? insightsPanel(classTopics) : ''}
             ${openTab === 'assignments' ? assignmentsPanel(assignments, members.length) : ''}
+            ${openTab === 'online' ? onlinePanel(sessions, members.length) : ''}
         </div>
 
         <div class="danger-zone">
@@ -266,6 +270,7 @@ async function renderClassDetail(app, token) {
     `;
 
     bindDetail(app, cls, members);
+    if (openTab === 'online') bindOnline(app, cls, sessions, () => renderClasses(app));
 }
 
 function statCard(tone, icon, label, value, small = false) {

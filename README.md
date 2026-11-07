@@ -38,6 +38,7 @@ Grade 12 learners often struggle with:
 ### Schools (optional)
 - **Learners** practise on their own as before, and can join a teacher's class with a 6-character code (and leave it at any time)
 - **Teachers** create classes, see each learner's scores and the class's weakest topics, and set tests with due dates
+- **Online classes**: teachers go live or schedule a class in a free video room (Jitsi) or with their own Google Meet / Zoom / Teams link; learners see **Live now – Join** on Home and their attendance is recorded
 - **Admin** approves teacher requests, sees all accounts and manages the question bank from inside the app
 
 ---
@@ -96,6 +97,7 @@ dashboard/
   data.js               Firestore reads and writes (profile, results)
   school-data.js        Roles, classes, set tests and admin data
   classes.js            Classes page (learners and teachers)
+  online.js             Online (live video) classes
   admin.js              Admin page
   progress.js           Charts
   questions.js          Question bank, paper list and topic list

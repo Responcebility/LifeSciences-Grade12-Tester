@@ -95,6 +95,18 @@ service cloud.firestore {
         allow delete: if isSelf(uid) || isClassTeacher();
       }
 
+      // Online classes: the teacher schedules, starts and ends them; members see them and mark their own attendance
+      match /sessions/{sessionId} {
+        allow read: if isClassTeacher() || isMember() || isAdmin();
+        allow write: if isClassTeacher();
+
+        match /attendance/{uid} {
+          allow read: if isSelf(uid) || isClassTeacher() || isAdmin();
+          allow create, update: if isSelf(uid) && isMember();
+          allow delete: if isClassTeacher();
+        }
+      }
+
       match /assignments/{assignmentId} {
         allow read: if isClassTeacher() || isMember() || isAdmin();
         allow write: if isClassTeacher();

@@ -18,7 +18,8 @@ import {
     limit,
     getDocs,
     getCountFromServer,
-    writeBatch
+    writeBatch,
+    Timestamp
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const docsOf = (snapshot) => snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -336,4 +337,75 @@ export async function saveQuestion(question) {
 
 export async function setQuestionActive(docId, active) {
     await updateDoc(doc(db, 'questions', docId), { active, updatedAt: serverTimestamp() });
+}
+
+// === Online classes ===
+// classes/{classId}/sessions/{id} = { title, startsAt, durationMins, provider: 'jitsi'|'link', room|url, status }
+// status: 'scheduled' → 'live' → 'ended'. Attendance: .../sessions/{id}/attendance/{uid}
+
+function makeRoomName(code) {
+    const values = crypto.getRandomValues(new Uint32Array(3));
+    return `PowerPrep-${code}-${Array.from(values, v => v.toString(36)).join('')}`;
+}
+
+export async function createSession(cls, { title, startsAt, durationMins, provider, url, startNow }) {
+    const ref = await addDoc(collection(db, 'classes', cls.id, 'sessions'), {
+        title,
+        startsAt: Timestamp.fromDate(startsAt),
+        durationMins,
+        provider,
+        room: provider === 'jitsi' ? makeRoomName(cls.code) : null,
+        url: provider === 'link' ? url : null,
+        status: startNow ? 'live' : 'scheduled',
+        startedAt: startNow ? serverTimestamp() : null,
+        createdAt: serverTimestamp()
+    });
+    return ref.id;
+}
+
+export async function setSessionStatus(classId, sessionId, status) {
+    const update = { status };
+    if (status === 'live') update.startedAt = serverTimestamp();
+    if (status === 'ended') update.endedAt = serverTimestamp();
+    await updateDoc(doc(db, 'classes', classId, 'sessions', sessionId), update);
+}
+
+export async function deleteSession(classId, sessionId) {
+    await deleteDoc(doc(db, 'classes', classId, 'sessions', sessionId));
+}
+
+export async function loadSessions(classId) {
+    const snap = await getDocs(query(collection(db, 'classes', classId, 'sessions'), orderBy('startsAt', 'asc')));
+    return docsOf(snap).map(s => ({ ...s, classId, startsAt: toDate(s.startsAt) || new Date() }));
+}
+
+export async function recordAttendance(user, classId, sessionId) {
+    await setDoc(doc(db, 'classes', classId, 'sessions', sessionId, 'attendance', user.uid), {
+        name: user.displayName || user.email,
+        joinedAt: serverTimestamp()
+    }, { merge: true });
+}
+
+export async function loadAttendance(classId, sessionId) {
+    const snap = await getDocs(collection(db, 'classes', classId, 'sessions', sessionId, 'attendance'));
+    return docsOf(snap).map(a => ({ ...a, joinedAt: toDate(a.joinedAt) }));
+}
+
+// Where a session takes place and whether it can be joined right now
+export function sessionState(session, now = new Date()) {
+    const start = session.startsAt.getTime();
+    const end = start + (session.durationMins || 60) * 60000;
+    if (session.status === 'ended') return 'ended';
+    // A live class that was never ended counts as over an hour after its planned end
+    if (now.getTime() > end + 60 * 60000) return 'ended';
+    if (session.status === 'live') return 'live';
+    if (now.getTime() >= start - 10 * 60000 && now.getTime() <= end) return 'open';   // lobby opens 10 min early
+    return now.getTime() < start ? 'upcoming' : 'ended';
+}
+
+export function meetingUrl(session, displayName) {
+    if (session.provider === 'link') return session.url;
+    const name = encodeURIComponent(JSON.stringify(displayName || 'Learner'));
+    const subject = encodeURIComponent(JSON.stringify(session.title || 'PowerPrep class'));
+    return `https://meet.jit.si/${encodeURIComponent(session.room)}#userInfo.displayName=${name}&config.subject=${subject}`;
 }

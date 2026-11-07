@@ -1868,6 +1868,230 @@ select.input {
     color: #ffffff;
 }
 
+/* === Online classes === */
+.online-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.live-start {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px;
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    /* .card would otherwise replace the blue panel background with white */
+    color: #ffffff;
+    background-color: var(--navy);
+    background-image: var(--pattern-on-dark), var(--hero-gradient);
+    background-size: 240px 240px, cover;
+}
+
+.live-start h3 {
+    font-size: 20px;
+}
+
+.live-start p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    flex: 1;
+}
+
+.live-start .input {
+    background: #ffffff;
+    color: #0e1b3d;
+    border-color: transparent;
+}
+
+.live-start .input::placeholder {
+    color: #5b6889;
+}
+
+.live-start-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--accent);
+    font-size: 19px;
+}
+
+.schedule-form {
+    margin-bottom: 0;
+}
+
+.host-tip {
+    margin: 4px 0 6px;
+}
+
+.host-tip i {
+    color: #b7791f;
+    margin-right: 4px;
+}
+
+.session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.session-row {
+    padding: 14px 16px;
+}
+
+.session-row.is-live {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.session-row.is-ended {
+    box-shadow: none;
+}
+
+.session-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.session-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.is-live .session-icon,
+.is-joinable .session-icon {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.session-info h4,
+.session-info strong {
+    font-size: 15px;
+}
+
+.session-info small {
+    color: var(--text-3);
+    font-size: 13px;
+}
+
+.session-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.badge-live {
+    background: #c9302c;
+    color: #ffffff;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+    animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+    50% { opacity: 0.25; }
+}
+
+.attendance-slot:not(:empty) {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.attendance-summary {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 8px;
+}
+
+.attendance-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 6px 16px;
+}
+
+.attendance-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.attendance-list i {
+    color: var(--success);
+}
+
+.attendance-list small {
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+/* Learner home */
+.sessions-card {
+    border-top: 4px solid var(--danger);
+}
+
+.sessions-card .card-title i {
+    color: var(--danger);
+    margin-right: 6px;
+}
+
+.home-session-list {
+    list-style: none;
+}
+
+.home-session {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+}
+
+.home-session:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.home-session.is-joinable {
+    margin: 0 -10px;
+    padding: 12px 10px;
+    border-radius: 14px;
+    background: var(--danger-soft);
+    border-top-color: transparent;
+}
+
+.home-session.is-joinable + .home-session {
+    border-top-color: transparent;
+}
+
 /* === Responsive === */
 @media (max-width: 1100px) {
     .stats-grid {
@@ -1982,7 +2206,8 @@ select.input {
         display: none;
     }
 
-    .guide-grid {
+    .guide-grid,
+    .online-grid {
         grid-template-columns: 1fr;
     }
 
@@ -2128,8 +2353,23 @@ select.input {
         width: 100%;
     }
 
-    .assignment-admin-head {
+    .assignment-admin-head,
+    .session-head,
+    .home-session {
         flex-wrap: wrap;
+    }
+
+    .session-info {
+        flex-basis: calc(100% - 60px);
+    }
+
+    .session-actions {
+        width: 100%;
+    }
+
+    .session-actions .btn,
+    .home-session .btn {
+        flex: 1;
     }
 
     .tabs {

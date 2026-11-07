@@ -26,7 +26,9 @@ const ERROR_MESSAGES = {
     'auth/too-many-requests': 'Too many attempts. Please wait a few minutes and try again.',
     'auth/network-request-failed': 'Network error. Check your internet connection and try again.',
     'auth/popup-blocked': 'Your browser blocked the Google sign-in window. Allow pop-ups and try again.',
-    'auth/user-disabled': 'This account has been disabled.'
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/operation-not-allowed': "This sign-in method isn't switched on yet. Please use email and password for now.",
+    'auth/unauthorized-domain': "Google sign-in isn't allowed on this website yet. Please use email and password for now."
 };
 
 export function friendlyAuthError(error) {

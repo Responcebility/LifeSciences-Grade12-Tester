@@ -35,6 +35,7 @@ import {
 } from './school-data.js';
 import { renderClasses } from './classes.js';
 import { renderAdmin } from './admin.js';
+import { renderHomeSessions } from './online.js';
 import { escapeHtml, formatDuration, showDialog, showToast, initThemeToggle, daysUntil, dueLabel } from '../shared/ui.js';
 
 const NAV_PAGES = ['home', 'papers', 'topics', 'progress', 'classes', 'guide', 'admin'];
@@ -139,6 +140,7 @@ async function refreshData() {
     renderTopics();
     renderProgress();
     renderHomeAssignments();
+    renderHomeSessions(app);
     const page = currentPage();
     if (page === 'classes') renderClasses(app);
     if (page === 'admin') renderAdmin(app);
@@ -185,6 +187,10 @@ function setupEventListeners() {
     });
 
     document.addEventListener('keydown', handleTestKeys);
+
+    setInterval(() => {
+        if (currentPage() === 'home' && profile?.classIds?.length) renderHomeSessions(app);
+    }, 60000);
 }
 
 // === Routing (location.hash) ===
