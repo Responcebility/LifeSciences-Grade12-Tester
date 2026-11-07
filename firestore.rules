@@ -43,6 +43,33 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isSelf(uid) || isAdmin();
       allow write: if isSelf(uid);
+
+      // AI note summaries the learner chose to keep
+      match /summaries/{summaryId} {
+        allow read, delete: if isSelf(uid);
+        allow create: if isSelf(uid)
+          && request.resource.data.summary is string
+          && request.resource.data.summary.size() < 40000
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 120;
+      }
+    }
+
+    // Daily AI usage counter: it can only start at 1 on a new day or go up by exactly one,
+    // so a learner can't reset their own limit
+    function today() {
+      return math.floor(request.time.toMillis() / 86400000);
+    }
+
+    match /aiUsage/{uid} {
+      allow read: if isSelf(uid);
+      allow create: if isSelf(uid)
+        && request.resource.data.day == today()
+        && request.resource.data.count == 1;
+      allow update: if isSelf(uid)
+        && request.resource.data.day == today()
+        && ((resource.data.day == today() && request.resource.data.count == resource.data.count + 1)
+          || (resource.data.day != today() && request.resource.data.count == 1));
     }
 
     // Test results belong to the learner who created them and can't be edited afterwards
