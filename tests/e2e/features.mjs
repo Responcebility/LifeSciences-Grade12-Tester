@@ -95,6 +95,7 @@ await ctx.route('**/api/summarize', (route) => {
     route.fulfill({ status: 200, headers: cors(route), contentType: 'application/json', body: JSON.stringify({ summary: FAKE_SUMMARY, remaining: 9, model: 'test' }) });
 });
 await ctx.route('https://www.education.gov.za/**', (route) => route.fulfill({ status: 200, contentType: 'application/pdf', body: makePdf(['DBE paper']) }));
+await ctx.route('https://www.saexampapers.co.za/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>Backup</h1>' }));
 
 const page = await ctx.newPage();
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
@@ -116,7 +117,10 @@ await page.waitForSelector('.official-card');
 // 1. Official past papers
 const sessions = await page.$$eval('.official-card', els => els.length);
 const nPaperLinks = await page.$$eval('.official-links a', els => els.filter(a => a.href.startsWith('https://www.education.gov.za/')).length);
-step(`official papers: ${sessions} sessions, ${nPaperLinks} DBE links, unavailable badges: ${await page.$$eval('.official-links .badge', els => els.length)}`);
+const nBackupButtons = await page.$$eval('.official-links a', els => els.filter(a => a.href.startsWith('https://www.saexampapers.co.za/')).length);
+const nBackupLines = await page.$$eval('.official-backup a', els => els.length);
+step(`official papers: ${sessions} sessions, ${nPaperLinks} DBE buttons, ${nBackupButtons} backup buttons (DBE missing), ${nBackupLines} "can't open it?" backup links, n/a badges: ${await page.$$eval('.official-links .badge', els => els.length)}`);
+step('2024 May/June P1 paper button goes to: ' + await page.$eval('[data-mark="2024|May/June|1"]', b => b.closest('.official-row').querySelector('.official-links a').href));
 await shot('f01-official-papers');
 await page.click('[data-official-filter="nov"]');
 step('November filter: ' + await page.$$eval('.official-card .badge', els => [...new Set(els.map(e => e.textContent.trim()))].join(', ')));

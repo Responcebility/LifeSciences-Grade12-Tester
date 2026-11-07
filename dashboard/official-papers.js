@@ -1,5 +1,5 @@
 // dashboard/official-papers.js - official DBE past papers (linked, not copied) and self-marking against the memo
-import { PAST_PAPERS, DBE_PAST_PAPERS_PAGE, SECTIONS, PAPER_TOTAL } from './past-papers.js';
+import { PAST_PAPERS, DBE_PAST_PAPERS_PAGE, BACKUP_SOURCE, SECTIONS, PAPER_TOTAL } from './past-papers.js';
 import { escapeHtml, showToast } from '../shared/ui.js';
 
 let filter = 'all';
@@ -7,6 +7,33 @@ let filter = 'all';
 const sessionKey = (s) => s.session === 'November' ? 'nov' : 'mayjune';
 export const officialType = (s, n) => `dbe-${s.year}-${sessionKey(s)}-p${n}`;
 export const officialTitle = (s, n) => `NSC ${s.session} ${s.year} · Paper ${n}`;
+
+// Prefer the DBE's own file; fall back to the SA Exam Papers page when DBE has none
+const source = (p, kind) => {
+    const backup = p[kind === 'paper' ? 'backupPaper' : 'backupMemo'];
+    if (p[kind]) return { url: p[kind], from: 'DBE', backup };
+    if (backup) return { url: backup, from: BACKUP_SOURCE.name, backup: null };
+    return null;
+};
+
+function fileButton(p, kind, label) {
+    const icon = kind === 'paper' ? 'far fa-file-pdf' : 'fas fa-check-double';
+    const word = kind === 'paper' ? 'Paper' : 'Memo';
+    const src = source(p, kind);
+    if (!src) return `<span class="badge" title="Not available from the DBE or ${BACKUP_SOURCE.name}">${word} n/a</span>`;
+    return `<a class="btn btn-secondary btn-sm" href="${escapeHtml(src.url)}" target="_blank" rel="noopener" aria-label="${label} ${word.toLowerCase()} (opens on ${escapeHtml(src.from)})"><i class="${icon}"></i> ${word}</a>`;
+}
+
+// "Can't open it?" links to the backup copy of files that normally open from the DBE
+function backupLine(p) {
+    const links = ['paper', 'memo']
+        .map(kind => ({ kind, src: source(p, kind) }))
+        .filter(({ src }) => src && src.from === 'DBE' && src.backup)
+        .map(({ kind, src }) => `<a class="text-link" href="${escapeHtml(src.backup)}" target="_blank" rel="noopener">${kind}</a>`);
+    return links.length
+        ? `<p class="official-backup">Can't open it? Backup copy on ${BACKUP_SOURCE.name}: ${links.join(' · ')}</p>`
+        : '';
+}
 
 export function renderOfficialPapers(app) {
     const box = document.getElementById('official-papers');
@@ -23,7 +50,7 @@ export function renderOfficialPapers(app) {
             <div>
                 <h2 class="section-title official-title">Official NSC past papers</h2>
                 <p class="muted-note">Real Department of Basic Education papers and memos, ${PAST_PAPERS[PAST_PAPERS.length - 1].year}–${PAST_PAPERS[0].year}. Write the paper, mark it with the memo, then record your marks to track your progress.</p>
-                <p class="muted-note official-hint"><i class="fas fa-circle-info"></i> The files open from the DBE website. If one won't open, that website may be temporarily down; try again later.</p>
+                <p class="muted-note official-hint"><i class="fas fa-circle-info"></i> Files open from the DBE website. If the DBE site is down, use the backup link under each paper.</p>
             </div>
             <div class="filter-bar" role="tablist" aria-label="Exam session">
                 ${[['all', 'All'], ['nov', 'November'], ['mayjune', 'May/June']].map(([v, l]) =>
@@ -41,6 +68,7 @@ export function renderOfficialPapers(app) {
                     ${[1, 2].map(n => {
                         const p = s[`p${n}`];
                         const score = best(officialType(s, n));
+                        const label = `Paper ${n} ${s.session} ${s.year}`;
                         return `
                             <div class="official-row">
                                 <div class="official-row-info">
@@ -48,21 +76,18 @@ export function renderOfficialPapers(app) {
                                     <small>${score === null ? (n === 1 ? 'Reproduction, responding to the environment' : 'DNA, genetics, evolution') : `Your best: <b>${score}%</b>`}</small>
                                 </div>
                                 <div class="official-links">
-                                    ${p.paper
-                                        ? `<a class="btn btn-secondary btn-sm" href="${escapeHtml(p.paper)}" target="_blank" rel="noopener" aria-label="Paper ${n} ${s.session} ${s.year} question paper (opens the DBE PDF)"><i class="far fa-file-pdf"></i> Paper</a>`
-                                        : '<span class="badge" title="The DBE website link for this file is missing or wrong">Paper n/a</span>'}
-                                    ${p.memo
-                                        ? `<a class="btn btn-secondary btn-sm" href="${escapeHtml(p.memo)}" target="_blank" rel="noopener" aria-label="Paper ${n} ${s.session} ${s.year} memo (opens the DBE PDF)"><i class="fas fa-check-double"></i> Memo</a>`
-                                        : '<span class="badge" title="The DBE website link for this file is missing or wrong">Memo n/a</span>'}
-                                    <button type="button" class="btn btn-primary btn-sm" data-mark="${s.year}|${s.session}|${n}" ${p.memo ? '' : 'disabled'}>Mark it</button>
+                                    ${fileButton(p, 'paper', label)}
+                                    ${fileButton(p, 'memo', label)}
+                                    <button type="button" class="btn btn-primary btn-sm" data-mark="${s.year}|${s.session}|${n}" ${source(p, 'memo') ? '' : 'disabled'}>Mark it</button>
                                 </div>
+                                ${backupLine(p)}
                             </div>
                         `;
                     }).join('')}
                 </article>
             `).join('')}
         </div>
-        <p class="muted-note official-source"><i class="fas fa-building-columns"></i> Papers and memos open from the <a class="text-link" href="${DBE_PAST_PAPERS_PAGE}" target="_blank" rel="noopener">Department of Basic Education website</a> (© Department of Basic Education). Every link was checked; "n/a" means the DBE site's own link was missing or pointed at the wrong file.</p>
+        <p class="muted-note official-source"><i class="fas fa-building-columns"></i> Papers and memos open from the <a class="text-link" href="${DBE_PAST_PAPERS_PAGE}" target="_blank" rel="noopener">Department of Basic Education website</a> (© Department of Basic Education), with backup copies on <a class="text-link" href="${BACKUP_SOURCE.url}" target="_blank" rel="noopener">${BACKUP_SOURCE.name}</a>. Every link was checked; "n/a" means neither site has that file.</p>
     `;
 
     box.querySelectorAll('[data-official-filter]').forEach(btn => btn.addEventListener('click', () => {
@@ -84,7 +109,7 @@ function openMarking(app, s, n) {
             <h2 id="mark-title">Mark ${escapeHtml(officialTitle(s, n))}</h2>
             <ol class="mark-steps">
                 <li>Write the paper under exam conditions (2½ hours).</li>
-                <li>Open the <a class="text-link" href="${escapeHtml(s[`p${n}`].memo)}" target="_blank" rel="noopener">memo</a> and mark each question honestly.</li>
+                <li>Open the <a class="text-link" href="${escapeHtml(source(s[`p${n}`], 'memo').url)}" target="_blank" rel="noopener">memo</a>${source(s[`p${n}`], 'memo').backup ? ` (or the <a class="text-link" href="${escapeHtml(source(s[`p${n}`], 'memo').backup)}" target="_blank" rel="noopener">backup copy</a>)` : ''} and mark each question honestly.</li>
                 <li>Enter your marks below. They count towards your progress and streak.</li>
             </ol>
             <div class="mark-grid">

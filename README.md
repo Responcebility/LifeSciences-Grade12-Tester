@@ -43,7 +43,7 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 - **Pause and resume**: leaving a test or refreshing the page keeps the answers and the timer
 - **Results and review**: score, topic breakdown and a recommendation, then every question with the correct answer and an explanation (filter by incorrect or unanswered)
 - **Progress**: per-topic mastery, a "focus area", a score history chart and a daily streak, all calculated from real answers
-- **Real NSC past papers**: every official Life Sciences Paper 1 and Paper 2 with memos from **2015 to 2026**, opened from the Department of Basic Education website
+- **Real NSC past papers**: every official Life Sciences Paper 1 and Paper 2 with memos from **2015 to 2026**, opened from the Department of Basic Education website, with a backup link for each one in case the DBE site is down
 - **Mark it against the memo**: write the paper, mark it with the official memo and enter marks per question; the score counts towards progress, streak and the teacher's class view
 - **AI notes**: upload a PDF or text file (or paste notes) and get a revision sheet with a summary, key terms, must-know facts and exam-style questions with answers; copy it, download it, save it as a PDF, or keep it in a personal library
 - **Classes**: join a teacher's class with a 6-character code (and leave any time); set tests and online lessons appear on Home
@@ -107,8 +107,9 @@ Grade 12 learners often don't know **which topics are costing them marks**, and 
 
 **Real past papers, checked one by one.**
 - A scraper pulled every Life Sciences entry from the DBE's year pages (21 exam sessions). Each of the 84 English papers and memos was then **downloaded and its cover page read** to confirm the subject, paper number, year and paper-vs-memo.
-- That caught **two broken links on the DBE site itself**: a 2026 memo that is actually *Information Technology*, and a 2024 "Paper 1" that serves the memo. They show as "n/a" instead of sending learners to the wrong file.
-- The papers stay on the DBE website (© Department of Basic Education); the app links to them rather than copying them.
+- That caught **two broken links on the DBE site itself**: a 2026 memo that is actually *Information Technology*, and a 2024 "Paper 1" that serves the memo. They don't send learners to the wrong file.
+- **A backup source for outages.** When education.gov.za went down, every paper gained a backup link to the same paper's page on [SA Exam Papers](https://www.saexampapers.co.za/grade-12-lifesciences/). Each page's title was checked for year, session, paper number and paper-vs-memo (82 of 84 matched). The 2024 Paper 1 that the DBE links wrongly now opens from the backup, so only one file (the 2026 May/June Paper 2 memo) has no source.
+- The papers stay on those sites (© Department of Basic Education); the app links to them rather than copying them.
 
 **The data model is built for cheap reads.**
 - Each learner's running totals and per-topic stats are kept with atomic `increment()` writes, so dashboards never re-add up the history, and two open tabs can't overwrite each other.
@@ -198,7 +199,7 @@ dashboard/
   school-data.js           Roles, classes, set tests, online classes, admin data
   classes.js · online.js   Classes page and online classes
   official-papers.js       Official NSC papers and memo self-marking
-  past-papers.js           Verified DBE paper and memo links (2015–2026)
+  past-papers.js           Verified DBE paper and memo links (2015–2026), plus backup links
   notes.js                 AI notes page
   admin.js                 Admin page
   progress.js              Charts
