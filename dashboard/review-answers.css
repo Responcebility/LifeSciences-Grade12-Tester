@@ -69,51 +69,6 @@
     color: var(--text-2);
 }
 
-.filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 18px;
-}
-
-.filter-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 36px;
-    padding: 0 14px;
-    border-radius: 999px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-2);
-    cursor: pointer;
-}
-
-.filter-chip span {
-    font-size: 12px;
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: var(--surface-2);
-}
-
-.filter-chip[aria-selected="true"] {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: var(--on-primary);
-}
-
-.filter-chip[aria-selected="true"] span {
-    background: rgba(127, 127, 127, 0.3);
-    color: inherit;
-}
-
-.filter-chip:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
 .review-list {
     display: flex;
     flex-direction: column;

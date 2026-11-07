@@ -2092,6 +2092,52 @@ select.input {
     border-top-color: transparent;
 }
 
+/* === Filter chips (papers, review page) === */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.filter-chip span {
+    font-size: 12px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--surface-2);
+}
+
+.filter-chip[aria-selected="true"] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.filter-chip[aria-selected="true"] span {
+    background: rgba(127, 127, 127, 0.3);
+    color: inherit;
+}
+
+.filter-chip:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* === Official past papers === */
 .official-papers {
     margin-top: 34px;
@@ -2159,9 +2205,10 @@ select.input {
 
 .official-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
+    gap: 8px 10px;
+    padding: 12px 0;
     border-top: 1px dashed var(--border);
 }
 
@@ -2172,7 +2219,7 @@ select.input {
 .official-row-info {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 1 1 100%;
     min-width: 0;
 }
 
@@ -2189,7 +2236,11 @@ select.input {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    width: 100%;
+}
+
+.official-links .btn-primary {
+    margin-left: auto;
 }
 
 .official-source {
@@ -2429,6 +2480,12 @@ select.input {
     display: flex;
     flex-direction: column;
     gap: 5px;
+}
+
+.summary-body hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
 }
 
 .summary-body code {

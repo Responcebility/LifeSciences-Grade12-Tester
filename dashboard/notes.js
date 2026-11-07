@@ -330,7 +330,10 @@ export function markdownToHtml(md) {
         const line = raw.trimEnd();
         let m;
         if (!line.trim()) { flushPara(); closeList(); continue; }
-        if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
+        if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
+            flushPara(); closeList();
+            html += '<hr>';
+        } else if ((m = line.match(/^(#{1,4})\s+(.*)$/))) {
             flushPara(); closeList();
             const level = Math.min(4, m[1].length + 1);
             html += `<h${level}>${inline(m[2])}</h${level}>`;
