@@ -211,19 +211,21 @@ function showOutput(app, remaining, truncated) {
     document.getElementById('sum-md').addEventListener('click', () => downloadText(state.title, state.summary));
     document.getElementById('sum-pdf').addEventListener('click', () => printSummary(state.title, state.summary));
     document.getElementById('sum-save').addEventListener('click', async (e) => {
+        // e.currentTarget is cleared once the handler awaits, so keep the button
+        const button = e.currentTarget;
         if (state.saved) return;
-        e.currentTarget.disabled = true;
+        button.disabled = true;
         try {
             await addDoc(collection(db, 'users', app.user.uid, 'summaries'), {
                 title: state.title, summary: state.summary, fileName: state.fileName || '', createdAt: serverTimestamp()
             });
             state.saved = true;
-            e.currentTarget.innerHTML = '<i class="fas fa-bookmark"></i> Saved';
+            button.innerHTML = '<i class="fas fa-bookmark"></i> Saved';
             showToast('Saved to My saved summaries.');
             loadHistory(app);
         } catch (error) {
             console.error(error);
-            e.currentTarget.disabled = false;
+            button.disabled = false;
             showToast('Could not save. Please try again.');
         }
     });
