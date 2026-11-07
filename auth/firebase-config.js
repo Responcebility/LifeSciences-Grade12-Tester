@@ -5,11 +5,11 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.11.1/firebas
 // Firebase web config is public by design; access is controlled by firestore.rules
 const firebaseConfig = {
   apiKey: "AIzaSyBwHBS58hi7UWhqbtgTYvRYkJVN-Qhu6S0",
-  authDomain: "biomind-academy.firebaseapp.com",
-  projectId: "biomind-academy",
-  storageBucket: "biomind-academy.firebasestorage.app",
-  messagingSenderId: "1080298031385",
-  appId: "1:1080298031385:web:da0bcd13b31a6e2aa50015"
+  authDomain: "lifescience-grade12.firebaseapp.com",
+  projectId: "lifescience-grade12",
+  storageBucket: "lifescience-grade12.firebasestorage.app",
+  messagingSenderId: "626330661828",
+  appId: "1:626330661828:web:e2e3ee6264379efa716a91"
 };
 
 const app = initializeApp(firebaseConfig);
